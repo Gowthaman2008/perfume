@@ -3,36 +3,44 @@ import './Reviews.css'
 
 const REVIEWS = [
   {
-    image: '/reviews/20dcdc23e2a4f226f07d20c7877b8cac.jpg',
-    name: 'Ethan R.',
+    image: '/people/a127d1dc816a727207dfcd788e440d3f.jpg',
+    name: 'Kavitha Sundaram',
+    location: 'Madurai',
+    product: 'Thenee Herbal Tea',
     rating: 5,
-    text: 'Oud Wood is unreal — rich, warm, and it lasts the entire day without turning sharp.',
+    text: "Thenee Herbal Tea is now our family's morning sacred ritual. Our digestion feels so light, internal body heat is balanced, and knowing it is handcrafted by rural women in Tamil Nadu makes it so special.",
   },
   {
-    image: '/reviews/661c3eccb4e65e1807e740ef7618ae1c.jpg',
-    name: 'Maya L.',
+    image: '/people/c6d03a9f02d2cfb0410ae129e6e6f95c.jpg',
+    name: 'Aarthi Natarajan',
+    location: 'Bengaluru',
+    product: 'Thenee Bliss Tea',
     rating: 5,
-    text: 'Lavender Blossom is my new signature. Soft, calming, and I get compliments every time.',
+    text: "The vibrant color of butterfly pea & hibiscus flowers is mesmerizing! It's completely caffeine-free, and drinking a warm cup before bed melts away all workday stress.",
   },
   {
-    image: '/reviews/46956dba564442462cef3ad1a8c08ec9.jpg',
-    name: 'Priya K.',
+    image: '/people/1d79a2f96c55e40ed685105da216843d.jpg',
+    name: 'Dr. Senthil Kumar',
+    location: 'Coimbatore',
+    product: 'Pure Moringa Powder',
     rating: 5,
-    text: 'Ruby Passion smells expensive. The bottle alone makes it feel like a gift to myself.',
+    text: 'You can immediately tell how freshly shade-dried the leaves are by the rich green color and clean aroma. It provides clean, non-jittery stamina throughout my long hospital shifts.',
   },
   {
-    image: '/reviews/c093b9cd25b45bf7a7500b7a1b1b7ff1.jpg',
-    name: 'Jordan B.',
-    rating: 4,
-    text: "Blue Wave is fresh without being generic. It's become my everyday scent.",
+    image: '/people/af6777ce69cecd4b65da707386eb43c6.jpg',
+    name: 'Meenakshi Raman',
+    location: 'Chennai',
+    product: 'Traditional Podis (Poondu & Karuveppilai)',
+    rating: 5,
+    text: "The Garlic Podi and Curry Leaves Podi bring back memories of my grandmother's cooking in Tirunelveli. Authentic flavors, zero preservatives, and heavenly with hot rice and ghee!",
   },
 ]
 
 const Star = ({ filled }) => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill={filled ? '#e0a951' : 'none'}>
+  <svg width="15" height="15" viewBox="0 0 24 24" fill={filled ? '#C6A15B' : 'none'}>
     <path
       d="M12 2.5l2.9 6.4 7 .7-5.3 4.7 1.6 6.9-6.2-3.7-6.2 3.7 1.6-6.9L2.1 9.6l7-.7L12 2.5Z"
-      stroke="#e0a951"
+      stroke="#C6A15B"
       strokeWidth="1.2"
       strokeLinejoin="round"
     />
@@ -47,8 +55,8 @@ const Reviews = () => {
 
   return (
     <section className="reviews" id="reviews" ref={sectionRef}>
-      <span className="reviews-kicker">Customer Love</span>
-      <h2 className="reviews-heading">What Our Customers Say</h2>
+      <span className="reviews-kicker">16,000+ Customer Family</span>
+      <h2 className="reviews-heading">Loved By Health-Conscious Homes Across India</h2>
       <div className="reviews-grid">
         {REVIEWS.map((r) => (
           <div className="review-card" key={r.name}>
@@ -59,9 +67,10 @@ const Reviews = () => {
                   <Star key={i} filled={i < r.rating} />
                 ))}
               </div>
+              <span className="review-product-tag">{r.product}</span>
               <p className="review-text">&ldquo;{r.text}&rdquo;</p>
               <span className="review-name">{r.name}</span>
-              <span className="review-role">Verified Buyer</span>
+              <span className="review-role">Verified Buyer • {r.location}</span>
             </div>
           </div>
         ))}

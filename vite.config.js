@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    headers: {
+      'Cache-Control': 'no-store',
+    },
     watch: {
       // Source reference photo dumps (raw UUID-named exports, in-progress
       // downloads, etc.) live under these folders - they aren't imported by

@@ -24,15 +24,20 @@ const Loader = () => {
     <div className={`loader ${phase === 'exiting' ? 'is-exiting' : ''}`}>
       <div className="loader-inner">
         <div className="loader-logo">
-          Fruitivo
-          <span>.</span>
-          <svg className="loader-logo-leaf" width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M4 20c0-8 6-14 14-14 0 8-6 14-14 14Z" fill="#4CAF50" />
-          </svg>
+          <img
+            src="/images/custom_thenee/thenee-brand-logo.png"
+            alt="THENEE"
+            className="loader-logo-img"
+          />
+          <div className="loader-brand-title">
+            <span>THENEE</span>
+            <small>தேனீ • Rooted in Nature</small>
+          </div>
         </div>
         <div className="loader-bar">
           <div className="loader-bar-fill" />
         </div>
+        <div className="loader-kicker">Crafted by Rural Women • Tenkasi</div>
       </div>
     </div>
   )

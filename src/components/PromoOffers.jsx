@@ -1,12 +1,14 @@
 import useReveal from '../lib/useReveal'
+import { useCart } from '../context/CartContext'
 import './PromoOffers.css'
 
 const TILES = [
   {
-    image: '/banner/9d2935b8-e64b-4da5-bbf9-131a9b83f82e.png',
-    heading: '20% Off Your First Order',
-    body: 'New to Fruitivo? Use code FRUITIVO20 at checkout and save on your first bottle.',
-    cta: 'Claim Your Discount',
+    image: '/images/custom_thenee/herbal-tea-scene.jpg',
+    heading: '15% Off Your First Herbal Order',
+    body: 'Begin your journey to natural healing. Use code THENEE15 on WhatsApp or checkout and save on your first order.',
+    cta: 'Claim Coupon (THENEE15)',
+    action: 'coupon',
     icon: (
       <path
         d="M4 12.5 12.5 4h6a1.5 1.5 0 0 1 1.5 1.5v6L11.5 20 4 12.5Z M15.5 8.5h.01"
@@ -19,10 +21,11 @@ const TILES = [
     ),
   },
   {
-    image: '/banner/3452da4c-b8af-400c-8278-89986c138532.png',
-    heading: 'Free Shipping Over $75',
-    body: "Stock up on your favorite scents and we'll get them to your door for free.",
+    image: '/images/custom_thenee/podis-scene.jpg',
+    heading: 'Free Shipping Across India Over ₹499',
+    body: 'Stock up on traditional botanical teas and nutrient-rich food podis — fresh from village roots to your home.',
     cta: 'Shop & Save',
+    action: 'shop',
     icon: (
       <path
         d="M2 7h11v9H2V7Zm11 3h4l3 3v3h-7v-6ZM5.5 19a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6Zm12 0a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6Z"
@@ -36,6 +39,7 @@ const TILES = [
 ]
 
 const PromoOffers = () => {
+  const { openCart } = useCart()
   const sectionRef = useReveal([
     { selector: '.promo-tile', y: 50, duration: 0.75, stagger: 0.14, start: 'top 82%' },
   ])
@@ -54,7 +58,19 @@ const PromoOffers = () => {
             <div className="promo-tile-content">
               <h3>{t.heading}</h3>
               <p>{t.body}</p>
-              <button className="promo-tile-btn">{t.cta}</button>
+              <button
+                className="promo-tile-btn"
+                onClick={() => {
+                  if (t.action === 'coupon') {
+                    navigator.clipboard?.writeText('THENEE15')
+                    alert('Coupon THENEE15 copied! Use it in WhatsApp or Cart.')
+                  } else {
+                    document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }}
+              >
+                {t.cta}
+              </button>
             </div>
           </div>
         ))}

@@ -1,6 +1,6 @@
 .offer-gallery {
   position: relative;
-  background: #f8f4ee;
+  background: var(--bg-main);
   padding: 76px 48px;
 }
 
@@ -21,7 +21,7 @@
 
 .offer-gallery-kicker {
   display: block;
-  color: #b06a2e;
+  color: var(--color-secondary);
   font-family: var(--font-body);
   font-size: 0.76rem;
   font-weight: 600;
@@ -31,7 +31,7 @@
 }
 
 .offer-gallery-header h2 {
-  color: var(--text-dark);
+  color: var(--color-primary);
   font-size: 2.1rem;
 }
 
@@ -58,7 +58,8 @@
   border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(60, 40, 20, 0.12);
+  box-shadow: 0 10px 24px rgba(49, 84, 58, 0.08);
+  border: 1px solid var(--border-color);
 }
 
 .gallery-card-img {
@@ -83,7 +84,7 @@
   justify-content: flex-end;
   padding: 16px;
   color: #fff;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, 0.8) 100%);
+  background: linear-gradient(180deg, rgba(20, 36, 24, 0) 40%, rgba(20, 36, 24, 0.88) 100%);
   opacity: 0;
   transition: opacity 0.4s ease;
 }
@@ -100,14 +101,14 @@
 
 .gallery-card-sub {
   font-size: 0.74rem;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.85);
   margin-top: 2px;
 }
 
 @media (hover: none) {
   .gallery-card-overlay {
     opacity: 1;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.75) 100%);
+    background: linear-gradient(180deg, rgba(20, 36, 24, 0) 50%, rgba(20, 36, 24, 0.85) 100%);
   }
 }
 
@@ -147,13 +148,5 @@
 
   .offer-gallery-header h2 {
     font-size: 2rem;
-  }
-
-  .offer-gallery-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .offer-gallery-col--wide {
-    grid-template-columns: 1fr 1fr;
   }
 }
