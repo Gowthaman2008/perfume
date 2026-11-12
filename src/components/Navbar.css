@@ -197,3 +197,23 @@
     color: var(--color-primary);
   }
 }
+
+@media (max-width: 600px) {
+  .navbar {
+    padding: 8px 14px;
+  }
+  .navbar-logo-img {
+    width: 36px;
+    height: 36px;
+  }
+  .navbar-brand-title {
+    font-size: 1.1rem;
+  }
+  .navbar-brand-subtitle {
+    font-size: 0.62rem;
+  }
+  .navbar-cart-btn {
+    width: 38px;
+    height: 38px;
+  }
+}

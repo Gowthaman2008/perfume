@@ -3,7 +3,7 @@ import './Reviews.css'
 
 const REVIEWS = [
   {
-    image: '/people/a127d1dc816a727207dfcd788e440d3f.jpg',
+    image: '/images/custom_thenee/herbal-tea-scene.jpg',
     name: 'Kavitha Sundaram',
     location: 'Madurai',
     product: 'Thenee Herbal Tea',
@@ -11,7 +11,7 @@ const REVIEWS = [
     text: "Thenee Herbal Tea is now our family's morning sacred ritual. Our digestion feels so light, internal body heat is balanced, and knowing it is handcrafted by rural women in Tamil Nadu makes it so special.",
   },
   {
-    image: '/people/c6d03a9f02d2cfb0410ae129e6e6f95c.jpg',
+    image: '/images/custom_thenee/bliss-tea-scene.jpg',
     name: 'Aarthi Natarajan',
     location: 'Bengaluru',
     product: 'Thenee Bliss Tea',
@@ -19,7 +19,7 @@ const REVIEWS = [
     text: "The vibrant color of butterfly pea & hibiscus flowers is mesmerizing! It's completely caffeine-free, and drinking a warm cup before bed melts away all workday stress.",
   },
   {
-    image: '/people/1d79a2f96c55e40ed685105da216843d.jpg',
+    image: '/images/custom_thenee/moringa-scene.jpg',
     name: 'Dr. Senthil Kumar',
     location: 'Coimbatore',
     product: 'Pure Moringa Powder',
@@ -27,7 +27,7 @@ const REVIEWS = [
     text: 'You can immediately tell how freshly shade-dried the leaves are by the rich green color and clean aroma. It provides clean, non-jittery stamina throughout my long hospital shifts.',
   },
   {
-    image: '/people/af6777ce69cecd4b65da707386eb43c6.jpg',
+    image: '/images/custom_thenee/podis-scene.jpg',
     name: 'Meenakshi Raman',
     location: 'Chennai',
     product: 'Traditional Podis (Poondu & Karuveppilai)',

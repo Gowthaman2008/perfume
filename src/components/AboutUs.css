@@ -192,6 +192,66 @@
 
 @media (max-width: 600px) {
   .about-thenee {
-    padding: 60px 20px;
+    padding: 45px 16px;
+  }
+
+  .about-header {
+    margin-bottom: 28px;
+  }
+
+  .about-kicker {
+    font-size: 0.72rem;
+    margin-bottom: 8px;
+  }
+
+  .about-header h2 {
+    font-size: 1.8rem;
+    margin-bottom: 12px;
+  }
+
+  .about-intro {
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  .about-pillars-grid {
+    gap: 14px;
+    margin-bottom: 30px;
+  }
+
+  .about-card {
+    padding: 22px 18px;
+    border-radius: 18px;
+  }
+
+  .about-card-icon {
+    font-size: 1.8rem;
+    margin-bottom: 12px;
+  }
+
+  .about-card h4 {
+    font-size: 1.15rem;
+    margin-bottom: 6px;
+  }
+
+  .about-card p {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+
+  .about-card-badge {
+    top: 14px;
+    right: 14px;
+    font-size: 0.62rem;
+    padding: 2px 8px;
+  }
+
+  .about-trust-banner {
+    padding: 18px 16px;
+    border-radius: 18px;
+    gap: 14px;
+    flex-direction: column;
+    text-align: center;
   }
 }

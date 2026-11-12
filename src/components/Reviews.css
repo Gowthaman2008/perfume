@@ -106,12 +106,50 @@
   }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 600px) {
   .reviews {
-    padding: 80px 24px;
+    padding: 45px 16px;
+  }
+
+  .reviews-kicker {
+    font-size: 0.72rem;
+    margin-bottom: 6px;
+  }
+
+  .reviews-heading {
+    font-size: 1.75rem;
+    margin-bottom: 24px;
+    line-height: 1.25;
   }
 
   .reviews-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .review-card {
+    border-radius: 18px;
+  }
+
+  .review-photo {
+    height: 190px;
+  }
+
+  .review-body {
+    padding: 14px 16px 18px;
+  }
+
+  .review-text {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+
+  .review-name {
+    font-size: 0.9rem;
+  }
+
+  .review-role {
+    font-size: 0.75rem;
   }
 }

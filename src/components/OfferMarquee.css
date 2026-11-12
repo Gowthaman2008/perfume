@@ -55,6 +55,17 @@
   }
 }
 
+@media (max-width: 600px) {
+  .offer-marquee {
+    height: 32px;
+  }
+  .offer-item {
+    font-size: 0.68rem;
+    gap: 12px;
+    padding: 0 12px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .offer-marquee-track {
     animation: none;

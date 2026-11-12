@@ -167,3 +167,30 @@
     height: 380px;
   }
 }
+
+@media (max-width: 600px) {
+  .testimonial {
+    padding: 45px 16px;
+  }
+
+  .testimonial-visual {
+    height: 250px;
+  }
+
+  .testimonial-quote {
+    font-size: 1.15rem;
+    line-height: 1.5;
+  }
+
+  .testimonial-author {
+    margin-top: 18px;
+  }
+
+  .testimonial-author strong {
+    font-size: 0.95rem;
+  }
+
+  .testimonial-author span {
+    font-size: 0.78rem;
+  }
+}
