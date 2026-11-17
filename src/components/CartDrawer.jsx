@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useCart } from '../context/CartContext'
 import { brandInfo } from '../data/products'
 import './CartDrawer.css'
@@ -18,6 +19,15 @@ const CartDrawer = () => {
     generateWhatsAppOrderUrl,
   } = useCart()
 
+  useEffect(() => {
+    if (isCartOpen) {
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.overflow = ''
+      }
+    }
+  }, [isCartOpen])
+
   if (!isCartOpen) return null
 
   const progressPercent = Math.min(100, (subtotal / freeShippingThreshold) * 100)
@@ -28,6 +38,7 @@ const CartDrawer = () => {
         className="cart-drawer"
         onClick={(e) => e.stopPropagation()}
         aria-label="Shopping Cart"
+        data-lenis-prevent
       >
         <div className="cart-header">
           <div className="cart-header-title">
