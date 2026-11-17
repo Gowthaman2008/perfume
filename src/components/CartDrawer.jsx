@@ -1,6 +1,5 @@
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
-import { brandInfo } from '../data/products'
 import './CartDrawer.css'
 
 const CartDrawer = () => {
@@ -15,16 +14,27 @@ const CartDrawer = () => {
     savings,
     freeShippingThreshold,
     amountToFreeShipping,
-    isFreeShipping,
-    generateWhatsAppOrderUrl,
+    isFreeDelivery,
+    deliveryFee,
+    appliedCoupon,
+    applyCoupon,
+    removeCoupon,
+    couponDiscount,
+    grandTotal,
   } = useCart()
 
+  const [couponInput, setCouponInput] = useState('')
+  const [couponError, setCouponError] = useState('')
+
+  // Lock body scroll when drawer open
   useEffect(() => {
     if (isCartOpen) {
       document.body.style.overflow = 'hidden'
       return () => {
         document.body.style.overflow = ''
       }
+    } else {
+      setCouponError('')
     }
   }, [isCartOpen])
 
@@ -32,14 +42,38 @@ const CartDrawer = () => {
 
   const progressPercent = Math.min(100, (subtotal / freeShippingThreshold) * 100)
 
+  // Handle coupon apply
+  const handleApplyCoupon = (codeToApply) => {
+    const targetCode = (codeToApply || couponInput).trim()
+    if (!targetCode) {
+      setCouponError('Please enter a coupon code.')
+      return
+    }
+    const result = applyCoupon(targetCode)
+    if (result.success) {
+      setCouponInput('')
+      setCouponError('')
+    } else {
+      setCouponError(result.message)
+    }
+  }
+
+  // Opens Checkout in Dedicated FULL PAGE
+  const handleProceedToCheckout = () => {
+    closeCart()
+    window.location.hash = 'checkout'
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }
+
   return (
     <div className="cart-backdrop" onClick={closeCart}>
       <aside
         className="cart-drawer"
         onClick={(e) => e.stopPropagation()}
-        aria-label="Shopping Cart"
+        aria-label="Shopping Cart Bag"
         data-lenis-prevent
       >
+        {/* HEADER */}
         <div className="cart-header">
           <div className="cart-header-title">
             <h3>Your Herbal Cart</h3>
@@ -53,7 +87,7 @@ const CartDrawer = () => {
         {/* Free delivery progress */}
         <div className="cart-shipping-banner">
           <div className="cart-shipping-text">
-            {isFreeShipping ? (
+            {isFreeDelivery ? (
               <span>🎉 You unlocked <strong>FREE Delivery</strong> across India!</span>
             ) : (
               <span>
@@ -64,7 +98,7 @@ const CartDrawer = () => {
           <div className="cart-shipping-bar">
             <div
               className="cart-shipping-fill"
-              style={{ width: `${progressPercent}%` }}
+              style={{ width: `${isFreeDelivery ? 100 : progressPercent}%` }}
             />
           </div>
         </div>
@@ -74,7 +108,13 @@ const CartDrawer = () => {
             <div className="cart-empty-icon">🌱</div>
             <h4>Your cart is empty</h4>
             <p>Explore our organic herbal teas and traditional food podis.</p>
-            <button className="cart-continue-btn" onClick={closeCart}>
+            <button
+              className="cart-continue-btn"
+              onClick={() => {
+                closeCart()
+                window.location.hash = 'products'
+              }}
+            >
               Explore Products
             </button>
           </div>
@@ -132,43 +172,105 @@ const CartDrawer = () => {
             </div>
 
             <div className="cart-footer">
+              {/* COUPON CODE APPLICATION BOX */}
+              <div className="cart-coupon-card">
+                <div className="cart-coupon-header">
+                  <span className="cart-coupon-icon">🎟️</span>
+                  <span className="cart-coupon-title">Apply Coupon Code</span>
+                </div>
+
+                {appliedCoupon ? (
+                  <div className="coupon-applied-pill">
+                    <div className="coupon-applied-info">
+                      <span className="coupon-tag-badge">✓ {appliedCoupon.code}</span>
+                      <span className="coupon-desc-text">
+                        {appliedCoupon.desc} (−₹{couponDiscount})
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      className="coupon-remove-btn"
+                      onClick={removeCoupon}
+                      title="Remove coupon"
+                    >
+                      ✕ Remove
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="coupon-input-group">
+                      <input
+                        type="text"
+                        className="coupon-text-input"
+                        placeholder="Enter coupon code"
+                        value={couponInput}
+                        onChange={(e) => {
+                          setCouponInput(e.target.value.toUpperCase())
+                          if (couponError) setCouponError('')
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            handleApplyCoupon()
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="coupon-apply-action-btn"
+                        onClick={() => handleApplyCoupon()}
+                      >
+                        Apply
+                      </button>
+                    </div>
+                    {couponError && <p className="coupon-error-msg">⚠️ {couponError}</p>}
+                  </>
+                )}
+              </div>
+
+              {/* PRICING BREAKDOWN */}
               <div className="cart-summary-row">
                 <span>Subtotal</span>
                 <strong>₹{subtotal}</strong>
               </div>
               {savings > 0 && (
                 <div className="cart-summary-row cart-savings">
-                  <span>Savings</span>
+                  <span>MRP Savings</span>
                   <span className="cart-savings-val">−₹{savings}</span>
                 </div>
               )}
+              {couponDiscount > 0 && (
+                <div className="cart-summary-row cart-coupon-savings">
+                  <span>Coupon Discount ({appliedCoupon?.code})</span>
+                  <span className="cart-coupon-val">−₹{couponDiscount}</span>
+                </div>
+              )}
               <div className="cart-summary-row">
-                <span>Delivery</span>
-                <span>{isFreeShipping ? 'FREE' : '₹40'}</span>
+                <span>Delivery Charges</span>
+                <span className={deliveryFee === 0 ? 'cart-free-tag' : ''}>
+                  {deliveryFee === 0 ? 'FREE' : '₹40'}
+                </span>
               </div>
               <div className="cart-summary-total">
                 <span>Grand Total</span>
-                <span className="cart-total-price">
-                  ₹{subtotal + (isFreeShipping ? 0 : 40)}
-                </span>
+                <span className="cart-total-price">₹{grandTotal}</span>
               </div>
 
-              {/* Express WhatsApp Order Button */}
-              <a
-                href={generateWhatsAppOrderUrl()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="cart-whatsapp-checkout-btn"
+              {/* NEXT BUTTON: OPENS DEDICATED FULL CHECKOUT PAGE */}
+              <button
+                type="button"
+                className="cart-checkout-next-btn"
+                onClick={handleProceedToCheckout}
               >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.23 8.23 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.24 8.24-1.42 0-2.82-.37-4.06-1.08l-.29-.17-3.12.82.83-3.04-.19-.3a8.17 8.17 0 0 1-1.25-4.47c0-4.54 3.7-8.24 8.24-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.25-1.5-1.4-1.75-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08s.89 2.41 1.01 2.58c.13.17 1.75 2.67 4.24 3.75.59.26 1.05.41 1.41.53.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.68-1.18.2-.59.2-1.09.14-1.19-.05-.1-.22-.16-.47-.28Z" />
-                </svg>
-                Order via WhatsApp (Instant)
-              </a>
+                <span>Next: Shipping & Online Payment</span>
+                <span className="cart-checkout-next-arrow">➔</span>
+              </button>
 
-              <p className="cart-trust-note">
-                🌿 Handcrafted by Rural Women Entrepreneurs | FSSAI: {brandInfo.fssai}
-              </p>
+              <div className="cart-security-badge-row">
+                <span>🔒 100% Safe & Secure Online Payment</span>
+                <span>•</span>
+                <span>UPI / Cards / NetBanking</span>
+              </div>
             </div>
           </>
         )}
@@ -178,4 +280,3 @@ const CartDrawer = () => {
 }
 
 export default CartDrawer
-

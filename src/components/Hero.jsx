@@ -12,7 +12,7 @@ gsap.registerPlugin(ScrollTrigger)
 
 const BG_TRANSITION = { duration: 0.6, ease: 'easeInOut' }
 
-const Hero = () => {
+const Hero = ({ onOpenAccount }) => {
   const [index, setIndex] = useState(0)
   const heroRef = useRef(null)
   const bottleFlyRefs = useRef({})
@@ -122,7 +122,7 @@ const Hero = () => {
       </motion.div>
 
       <OfferMarquee />
-      <Navbar />
+      <Navbar onOpenAccount={onOpenAccount} currentRoute="home" />
 
       <div className="hero-main">
         <div className="hero-body">

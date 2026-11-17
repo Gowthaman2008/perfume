@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import useLenis from './lib/useLenis'
 import Loader from './components/Loader'
 import Hero from './components/Hero'
@@ -11,24 +12,84 @@ import PromoOffers from './components/PromoOffers'
 import Footer from './components/Footer'
 import CartDrawer from './components/CartDrawer'
 import ProductModal from './components/ProductModal'
+import AccountPage from './components/AccountPage'
+import ProductsPage from './components/ProductsPage'
+import FoodPodisPage from './components/FoodPodisPage'
+import HealthGoalsPage from './components/HealthGoalsPage'
+import OurStoryPage from './components/OurStoryPage'
+import ReviewsPage from './components/ReviewsPage'
+import ContactPage from './components/ContactPage'
+import CheckoutPage from './components/CheckoutPage'
 import { CartProvider, useCart } from './context/CartContext'
 
+const parseRouteFromHash = () => {
+  const hash = window.location.hash.replace('#', '')
+  if (hash.startsWith('account')) return 'account'
+  if (hash.startsWith('checkout')) return 'checkout'
+  if (hash === 'products' || hash === 'catalog') return 'products'
+  if (hash === 'podis' || hash === 'food-podis') return 'podis'
+  if (hash === 'wellness' || hash === 'health-goals') return 'wellness'
+  if (hash === 'about' || hash === 'our-story') return 'about'
+  if (hash === 'reviews') return 'reviews'
+  if (hash === 'contact') return 'contact'
+  return 'home'
+}
+
 const AppContent = () => {
+  const [route, setRoute] = useState(parseRouteFromHash)
+
   useLenis()
   const { toastMessage } = useCart()
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setRoute(parseRouteFromHash())
+      window.scrollTo({ top: 0, behavior: 'instant' })
+    }
+
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
+
+  const navigateToAccount = () => {
+    window.location.hash = 'account'
+    setRoute('account')
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }
+
+  const navigateToHome = () => {
+    window.location.hash = 'home'
+    setRoute('home')
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }
 
   return (
     <>
       <Loader />
-      <Hero />
-      <BestSellers />
-      <AboutUs />
-      <OfferGallery />
-      <MoodSelector />
-      <Testimonial />
-      <Reviews />
-      <PromoOffers />
-      <Footer />
+
+      {route === 'account' && <AccountPage onBack={navigateToHome} />}
+      {route === 'checkout' && <CheckoutPage onBack={navigateToHome} onOpenAccount={navigateToAccount} />}
+      {route === 'products' && <ProductsPage onOpenAccount={navigateToAccount} />}
+      {route === 'podis' && <FoodPodisPage onOpenAccount={navigateToAccount} />}
+      {route === 'wellness' && <HealthGoalsPage onOpenAccount={navigateToAccount} />}
+      {route === 'about' && <OurStoryPage onOpenAccount={navigateToAccount} />}
+      {route === 'reviews' && <ReviewsPage onOpenAccount={navigateToAccount} />}
+      {route === 'contact' && <ContactPage onOpenAccount={navigateToAccount} />}
+
+      {route === 'home' && (
+        <>
+          <Hero onOpenAccount={navigateToAccount} />
+          <BestSellers />
+          <AboutUs />
+          <OfferGallery />
+          <MoodSelector />
+          <Testimonial />
+          <Reviews />
+          <PromoOffers />
+          <Footer />
+        </>
+      )}
+
       <CartDrawer />
       <ProductModal />
 

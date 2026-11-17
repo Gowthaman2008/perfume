@@ -52,8 +52,6 @@ const BestSellers = () => {
       <div className="bestsellers-grid">
         {filteredProducts.map((p) => (
           <div className="bs-card" key={p.id}>
-            {p.badge && <span className="bs-card-badge">{p.badge}</span>}
-
             <div
               className="bs-card-media"
               onClick={() => setSelectedProduct(p)}
@@ -119,8 +117,6 @@ const BestSellers = () => {
       <div className="bestsellers-grid">
         {individualPodis.map((podi) => (
           <div className="bs-card" key={podi.id}>
-            {podi.badge && <span className="bs-card-badge">{podi.badge}</span>}
-
             <div
               className="bs-card-media"
               onClick={() => setSelectedProduct(podi)}
