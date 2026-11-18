@@ -17,8 +17,12 @@ const DEMO_USER = {
   healthGoals: ['Blood Sugar Control', 'Internal Body Cooling', 'Gut Health'],
 }
 
-const LoginPage = ({ onLoginSuccess, onBack }) => {
+const LoginPage = ({ onLoginSuccess, onBack, redirectTarget }) => {
   const { loginUser } = useCart()
+
+  const isCheckoutRedirect =
+    redirectTarget === 'checkout' ||
+    (typeof window !== 'undefined' && sessionStorage.getItem('thenee_login_redirect') === 'checkout')
 
   // Primary view: 'signin' | 'signup'
   const [view, setView] = useState('signin')
@@ -237,6 +241,11 @@ const LoginPage = ({ onLoginSuccess, onBack }) => {
         <div className="pro-login-card">
           {/* Card Top Title */}
           <div className="pro-card-header">
+            {isCheckoutRedirect && (
+              <div className="pro-checkout-alert-pill">
+                <span>🛒 Sign in to complete your checkout</span>
+              </div>
+            )}
             <div className="pro-leaf-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#31543A" strokeWidth="2">
                 <path d="M11 20A7 7 0 0 1 4 13C4 8 8 3 13 3c5 0 7 2 7 7 0 5-4 10-9 10Z" strokeLinecap="round" strokeLinejoin="round" />
@@ -245,9 +254,13 @@ const LoginPage = ({ onLoginSuccess, onBack }) => {
             </div>
             <h1>{view === 'signin' ? 'Sign In' : 'Create an Account'}</h1>
             <p>
-              {view === 'signin'
-                ? 'Access your orders, track consignments & member perks.'
-                : 'Join THENEE to track orders and earn green reward points.'}
+              {isCheckoutRedirect
+                ? (view === 'signin'
+                    ? 'Sign in to access saved addresses and proceed to payment.'
+                    : 'Create an account to complete your order and track shipping.')
+                : (view === 'signin'
+                    ? 'Access your orders, track consignments & member perks.'
+                    : 'Join THENEE to track orders and earn green reward points.')}
             </p>
           </div>
 

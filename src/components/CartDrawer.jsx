@@ -22,6 +22,7 @@ const CartDrawer = () => {
     removeCoupon,
     couponDiscount,
     grandTotal,
+    isLoggedIn,
   } = useCart()
 
   const [couponInput, setCouponInput] = useState('')
@@ -59,10 +60,15 @@ const CartDrawer = () => {
     }
   }
 
-  // Opens Checkout in Dedicated FULL PAGE
+  // Opens Checkout in Dedicated FULL PAGE (or redirects to Login if unauthenticated)
   const handleProceedToCheckout = () => {
     closeCart()
-    window.location.hash = 'checkout'
+    if (!isLoggedIn) {
+      sessionStorage.setItem('thenee_login_redirect', 'checkout')
+      window.location.hash = 'login'
+    } else {
+      window.location.hash = 'checkout'
+    }
     window.scrollTo({ top: 0, behavior: 'instant' })
   }
 

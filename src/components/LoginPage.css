@@ -112,6 +112,21 @@
   margin-bottom: 22px;
 }
 
+.pro-checkout-alert-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #EFF6EE;
+  border: 1px solid #CDE2CB;
+  color: #2D5A3D;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(45, 90, 61, 0.05);
+}
+
 .pro-leaf-icon {
   width: 40px;
   height: 40px;

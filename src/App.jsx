@@ -86,8 +86,10 @@ const AppContent = () => {
         ) : (
           <LoginPage
             onLoginSuccess={() => {
-              window.location.hash = 'account'
-              setRoute('account')
+              const redirect = sessionStorage.getItem('thenee_login_redirect') || 'account'
+              sessionStorage.removeItem('thenee_login_redirect')
+              window.location.hash = redirect
+              setRoute(redirect)
             }}
             onBack={navigateToHome}
           />
@@ -96,13 +98,29 @@ const AppContent = () => {
       {route === 'login' && (
         <LoginPage
           onLoginSuccess={() => {
-            window.location.hash = 'account'
-            setRoute('account')
+            const redirect = sessionStorage.getItem('thenee_login_redirect') || 'account'
+            sessionStorage.removeItem('thenee_login_redirect')
+            window.location.hash = redirect
+            setRoute(redirect)
           }}
           onBack={navigateToHome}
         />
       )}
-      {route === 'checkout' && <CheckoutPage onBack={navigateToHome} onOpenAccount={navigateToAccount} />}
+      {route === 'checkout' && (
+        isLoggedIn ? (
+          <CheckoutPage onBack={navigateToHome} onOpenAccount={navigateToAccount} />
+        ) : (
+          <LoginPage
+            redirectTarget="checkout"
+            onLoginSuccess={() => {
+              sessionStorage.removeItem('thenee_login_redirect')
+              window.location.hash = 'checkout'
+              setRoute('checkout')
+            }}
+            onBack={navigateToHome}
+          />
+        )
+      )}
       {route === 'products' && <ProductsPage onOpenAccount={navigateToAccount} />}
       {route === 'podis' && <FoodPodisPage onOpenAccount={navigateToAccount} />}
       {route === 'wellness' && <HealthGoalsPage onOpenAccount={navigateToAccount} />}

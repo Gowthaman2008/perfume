@@ -113,16 +113,17 @@ const Hero = ({ onOpenAccount }) => {
               scrub: true,
               invalidateOnRefresh: true,
               onUpdate: (self) => {
-                heroRef.current.style.zIndex = self.progress > 0 && self.progress < 1 ? 25 : ''
+                heroRef.current.style.zIndex = self.progress > 0 && self.progress < 1 ? '30' : '10'
               },
               onLeave: () => {
                 cardImg.style.opacity = '1'
                 flyEl.style.opacity = '0'
-                heroRef.current.style.zIndex = ''
+                heroRef.current.style.zIndex = '10'
               },
               onEnterBack: () => {
                 cardImg.style.opacity = '0'
                 flyEl.style.opacity = '1'
+                heroRef.current.style.zIndex = '30'
               },
             },
           })

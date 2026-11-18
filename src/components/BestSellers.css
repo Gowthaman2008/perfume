@@ -1,7 +1,8 @@
 .bestsellers {
+  position: relative;
+  z-index: 1;
   background: var(--bg-main);
   padding: 80px 48px 110px;
-  overflow: hidden;
 }
 
 .bestsellers-top {
