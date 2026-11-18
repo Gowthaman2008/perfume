@@ -1284,3 +1284,12 @@
   margin-top: 12px;
   line-height: 1.35;
 }
+
+.cart-drawer-credits {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-color);
+}

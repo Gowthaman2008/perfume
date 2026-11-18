@@ -221,6 +221,23 @@ const CheckoutPage = ({ onBack, onOpenAccount }) => {
             </button>
           </div>
         </div>
+
+        <footer className="checkout-bottom-credits">
+          <div className="checkout-bottom-credits-inner">
+            <p className="checkout-copyright">
+              © {new Date().getFullYear()} The Roots Enterprises. All rights reserved. Handcrafted by Rural Women in Tenkasi, Tamil Nadu.
+            </p>
+            <a
+              href="https://www.crearemind.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-crearemind-link"
+              title="Visit Creare Mind (opens in new tab)"
+            >
+              <span>POWERED BY</span> <strong>CREARE MIND</strong>
+            </a>
+          </div>
+        </footer>
       </div>
     )
   }
@@ -580,6 +597,24 @@ const CheckoutPage = ({ onBack, onOpenAccount }) => {
           </div>
         </main>
       )}
+
+      {/* CHECKOUT BOTTOM FOOTER CREDITS */}
+      <footer className="checkout-bottom-credits">
+        <div className="checkout-bottom-credits-inner">
+          <p className="checkout-copyright">
+            © {new Date().getFullYear()} The Roots Enterprises. All rights reserved. Handcrafted by Rural Women in Tenkasi, Tamil Nadu.
+          </p>
+          <a
+            href="https://www.crearemind.in"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer-crearemind-link"
+            title="Visit Creare Mind (opens in new tab)"
+          >
+            <span>POWERED BY</span> <strong>CREARE MIND</strong>
+          </a>
+        </div>
+      </footer>
     </div>
   )
 }

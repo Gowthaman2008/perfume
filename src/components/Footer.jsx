@@ -242,12 +242,25 @@ const Footer = () => {
       </div>
 
       <div className="footer-bottom">
-        <p className="footer-copy">
-          © {new Date().getFullYear()} The Roots Enterprises. All rights reserved. Handcrafted by Rural Women in Tenkasi, Tamil Nadu.
-        </p>
-        <p className="footer-fssai-legal">
-          Govt. Certified under Food Safety and Standards Authority of India (FSSAI Lic. No. 22425278000320)
-        </p>
+        <div className="footer-bottom-left">
+          <p className="footer-copy">
+            © {new Date().getFullYear()} The Roots Enterprises. All rights reserved. Handcrafted by Rural Women in Tenkasi, Tamil Nadu.
+          </p>
+          <p className="footer-fssai-legal">
+            Govt. Certified under Food Safety and Standards Authority of India (FSSAI Lic. No. 22425278000320)
+          </p>
+        </div>
+        <div className="footer-bottom-right">
+          <a
+            href="https://www.crearemind.in"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer-crearemind-link"
+            title="Visit Creare Mind (opens in new tab)"
+          >
+            <span>POWERED BY</span> <strong>CREARE MIND</strong>
+          </a>
+        </div>
       </div>
     </footer>
   )

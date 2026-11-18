@@ -78,52 +78,6 @@ const ContactPage = ({ onOpenAccount }) => {
       </section>
 
       <main className="page-main-content">
-        {/* Contact Info Cards Grid */}
-        <div className="contact-cards-grid">
-          {/* WhatsApp Card */}
-          <div className="contact-info-card card-whatsapp">
-            <span className="contact-card-icon">💬</span>
-            <h3>WhatsApp Support</h3>
-            <p>Instant answers, custom gift hampers, and direct reorders.</p>
-            <a
-              href={`https://wa.me/${brandInfo.whatsapp.replace(/\D/g, '')}?text=Hello%20THENEE%2C%20I%20have%20an%20inquiry.`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-card-wa"
-            >
-              Chat on WhatsApp ({brandInfo.whatsapp}) →
-            </a>
-          </div>
-
-          {/* Telephone Card */}
-          <div className="contact-info-card">
-            <span className="contact-card-icon">📞</span>
-            <h3>Phone Call Support</h3>
-            <p>Monday to Saturday • 9:00 AM to 7:00 PM</p>
-            <a href={`tel:${brandInfo.whatsapp}`} className="contact-link-pill">
-              +91 75502 48005
-            </a>
-          </div>
-
-          {/* Email Card */}
-          <div className="contact-info-card">
-            <span className="contact-card-icon">✉️</span>
-            <h3>Email Helpdesk</h3>
-            <p>For order queries, invoices, and clinic tie-ups.</p>
-            <a href="mailto:theenenterprises2024@gmail.com" className="contact-link-pill">
-              theenenterprises2024@gmail.com
-            </a>
-          </div>
-
-          {/* Address Card */}
-          <div className="contact-info-card">
-            <span className="contact-card-icon">📍</span>
-            <h3>Farm & Processing Unit</h3>
-            <p>The Roots Enterprises, 1/48, Pillaiyar Kovil Street, Manthiyoor, Kadayam, Tenkasi District, TN - 627415</p>
-            <span className="contact-license-badge">FSSAI Lic. #{brandInfo.fssai}</span>
-          </div>
-        </div>
-
         {/* Message Form & Unit Location Showcase */}
         <div className="contact-form-layout">
           <div className="contact-form-box">
@@ -218,6 +172,52 @@ const ContactPage = ({ onOpenAccount }) => {
                 <li>✓ Full live tracking from Tenkasi to your doorstep</li>
               </ul>
             </div>
+          </div>
+        </div>
+
+        {/* Contact Info Cards Grid */}
+        <div className="contact-cards-grid">
+          {/* WhatsApp Card */}
+          <div className="contact-info-card card-whatsapp">
+            <span className="contact-card-icon">💬</span>
+            <h3>WhatsApp Support</h3>
+            <p>Instant answers, custom gift hampers, and direct reorders.</p>
+            <a
+              href={`https://wa.me/${brandInfo.whatsapp.replace(/\D/g, '')}?text=Hello%20THENEE%2C%20I%20have%20an%20inquiry.`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-card-wa"
+            >
+              Chat on WhatsApp →
+            </a>
+          </div>
+
+          {/* Telephone Card */}
+          <div className="contact-info-card">
+            <span className="contact-card-icon">📞</span>
+            <h3>Phone Call Support</h3>
+            <p>Monday to Saturday • 9:00 AM to 7:00 PM</p>
+            <a href={`tel:${brandInfo.whatsapp}`} className="contact-link-pill">
+              +91 75502 48005
+            </a>
+          </div>
+
+          {/* Email Card */}
+          <div className="contact-info-card">
+            <span className="contact-card-icon">✉️</span>
+            <h3>Email Helpdesk</h3>
+            <p>For order queries, invoices, and clinic tie-ups.</p>
+            <a href="mailto:theenenterprises2024@gmail.com" className="contact-link-pill">
+              theenenterprises2024@gmail.com
+            </a>
+          </div>
+
+          {/* Address Card */}
+          <div className="contact-info-card">
+            <span className="contact-card-icon">📍</span>
+            <h3>Farm & Processing Unit</h3>
+            <p>The Roots Enterprises, 1/48, Pillaiyar Kovil Street, Manthiyoor, Kadayam, Tenkasi District, TN - 627415</p>
+            <span className="contact-license-badge">FSSAI Lic. #{brandInfo.fssai}</span>
           </div>
         </div>
 

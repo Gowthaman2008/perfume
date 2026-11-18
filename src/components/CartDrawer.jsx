@@ -277,6 +277,18 @@ const CartDrawer = () => {
                 <span>•</span>
                 <span>UPI / Cards / NetBanking</span>
               </div>
+
+              <div className="cart-drawer-credits">
+                <a
+                  href="https://www.crearemind.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-crearemind-link"
+                  title="Visit Creare Mind (opens in new tab)"
+                >
+                  <span>POWERED BY</span> <strong>CREARE MIND</strong>
+                </a>
+              </div>
             </div>
           </>
         )}

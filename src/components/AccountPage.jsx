@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
 import { products, individualPodis, brandInfo } from '../data/products'
 import { SkeletonOrderCard, ImageWithSkeleton } from './Skeleton'
+import Footer from './Footer'
 import './AccountPage.css'
 
 const INITIAL_ORDERS = [
@@ -979,6 +980,9 @@ const AccountPage = ({ onBack }) => {
           )}
         </div>
       )}
+
+      {/* Footer with Powered by Creare Mind Credits */}
+      <Footer />
 
       {/* Floating Toast Notification */}
       {toastMsg && (

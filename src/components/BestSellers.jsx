@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { products, individualPodis } from '../data/products'
 import { useCart } from '../context/CartContext'
 import useReveal from '../lib/useReveal'
-import { SkeletonProductCard, ImageWithSkeleton } from './Skeleton'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import './BestSellers.css'
 
 const CATEGORIES = [
@@ -14,13 +14,10 @@ const CATEGORIES = [
 
 const BestSellers = () => {
   const [activeCategory, setActiveCategory] = useState('all')
-  const [isLoading, setIsLoading] = useState(false)
   const { addToCart, setSelectedProduct, openCart } = useCart()
 
   useEffect(() => {
-    setIsLoading(true)
-    const timer = setTimeout(() => setIsLoading(false), 250)
-    return () => clearTimeout(timer)
+    ScrollTrigger.refresh()
   }, [activeCategory])
 
   const sectionRef = useReveal([
@@ -58,24 +55,22 @@ const BestSellers = () => {
 
       {/* Flagship Hero Grid (includes the 4 GSAP landing slots) */}
       <div className="bestsellers-grid">
-        {isLoading ? (
-          Array.from({ length: 4 }).map((_, i) => <SkeletonProductCard key={i} />)
-        ) : (
-          filteredProducts.map((p) => (
-            <div className="bs-card" key={p.id}>
-              <div
-                className="bs-card-media"
-                onClick={() => setSelectedProduct(p)}
-                title="Click for full benefits & ingredients"
-              >
-                <ImageWithSkeleton
-                  src={p.bottle}
-                  alt={p.name}
-                  className="bs-card-img"
-                  data-perfume-id={p.id}
-                  skeletonBorderRadius="12px"
-                />
-              </div>
+        {filteredProducts.map((p) => (
+          <div className="bs-card" key={p.id}>
+            {p.badge && <span className="bs-card-badge">{p.badge}</span>}
+
+            <div
+              className="bs-card-media"
+              onClick={() => setSelectedProduct(p)}
+              title="Click for full benefits & ingredients"
+            >
+              <img
+                src={p.bottle}
+                alt={p.name}
+                className="bs-card-img"
+                data-perfume-id={p.id}
+              />
+            </div>
 
             <div className="bs-card-info">
               {p.tamilName && <p className="bs-card-tamil">{p.tamilName}</p>}
@@ -114,8 +109,7 @@ const BestSellers = () => {
               </div>
             </div>
           </div>
-        ))
-      )}
+        ))}
       </div>
 
       {/* Traditional Food Podis Shelf */}
@@ -130,6 +124,8 @@ const BestSellers = () => {
       <div className="bestsellers-grid">
         {individualPodis.map((podi) => (
           <div className="bs-card" key={podi.id}>
+            {podi.badge && <span className="bs-card-badge">{podi.badge}</span>}
+
             <div
               className="bs-card-media"
               onClick={() => setSelectedProduct(podi)}

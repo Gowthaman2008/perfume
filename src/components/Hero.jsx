@@ -26,79 +26,126 @@ const Hero = ({ onOpenAccount }) => {
   // Flies the currently active bottle down out of the hero and into its
   // matching card slot as the user scrolls
   useLayoutEffect(() => {
-    const flyEl = bottleFlyRefs.current[current.id]
-    const cardImg = document.querySelector(
-      `.bs-card-img[data-perfume-id="${current.id}"]`
-    )
-    const card = cardImg?.closest('.bs-card')
-    if (!flyEl || !cardImg || !card) return
-
-    document.querySelectorAll('.bs-card-img').forEach((img) => {
-      img.style.opacity = ''
-    })
-    cardImg.style.opacity = '0'
-
     let ctx
     let cancelled = false
-    const ready = Promise.all([
-      new Promise((resolve) => setTimeout(resolve, 650)),
-      document.fonts?.ready ?? Promise.resolve(),
-    ])
+    let rafId
 
-    ready.then(() => {
-      if (cancelled) return
-      ctx = gsap.context(() => {
-        const dstRect = cardImg.getBoundingClientRect()
-        const srcRect = flyEl.querySelector('.hero-bottle-img').getBoundingClientRect()
-        const flyElRect = flyEl.getBoundingClientRect()
-        const srcCx = srcRect.left + srcRect.width / 2
-        const srcCy = srcRect.top + srcRect.height / 2
-        const dstCx = dstRect.left + dstRect.width / 2
-        const dstCy = dstRect.top + dstRect.height / 2
-        const wCx = flyElRect.left + flyElRect.width / 2
-        const wCy = flyElRect.top + flyElRect.height / 2
-        const scale = dstRect.width / srcRect.width
+    const initFlight = () => {
+      const flyEl = bottleFlyRefs.current[current.id]
+      const cardImg = document.querySelector(
+        `.bs-card-img[data-perfume-id="${current.id}"]`
+      )
+      const card = cardImg?.closest('.bs-card')
 
-        gsap.set(flyEl, { zIndex: 300, opacity: 1 })
-
-        const x = dstCx - wCx - scale * (srcCx - wCx)
-        const y = dstCy - wCy - scale * (srcCy - wCy)
-
-        gsap.to(flyEl, {
-          x,
-          y,
-          scale,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: heroRef.current,
-            start: 'top top',
-            endTrigger: card,
-            end: 'top 140px',
-            scrub: true,
-            onUpdate: (self) => {
-              heroRef.current.style.zIndex = self.progress > 0 && self.progress < 1 ? 25 : ''
-            },
-            onLeave: () => {
-              cardImg.style.opacity = '1'
-              flyEl.style.opacity = '0'
-              heroRef.current.style.zIndex = ''
-            },
-            onEnterBack: () => {
-              cardImg.style.opacity = '0'
-              flyEl.style.opacity = '1'
-            },
-          },
+      if (!flyEl || !cardImg || !card) {
+        // Retry in next frame if DOM nodes aren't ready yet
+        rafId = requestAnimationFrame(() => {
+          if (!cancelled) initFlight()
         })
-      }, heroRef)
-    })
+        return
+      }
+
+      document.querySelectorAll('.bs-card-img').forEach((img) => {
+        img.style.opacity = ''
+      })
+      cardImg.style.opacity = '0'
+
+      const heroImg = flyEl.querySelector('.hero-bottle-img')
+
+      const waitForImg = (img) => {
+        if (!img) return Promise.resolve()
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve()
+        return new Promise((resolve) => {
+          const onDone = () => {
+            img.removeEventListener('load', onDone)
+            img.removeEventListener('error', onDone)
+            resolve()
+          }
+          img.addEventListener('load', onDone)
+          img.addEventListener('error', onDone)
+        })
+      }
+
+      Promise.all([
+        new Promise((resolve) => setTimeout(resolve, 300)),
+        document.fonts?.ready ?? Promise.resolve(),
+        waitForImg(cardImg),
+        waitForImg(heroImg),
+      ]).then(() => {
+        if (cancelled) return
+
+        ScrollTrigger.refresh()
+
+        ctx = gsap.context(() => {
+          const calcTransform = () => {
+            const dstRect = cardImg.getBoundingClientRect()
+            const srcRect = heroImg ? heroImg.getBoundingClientRect() : flyEl.getBoundingClientRect()
+            const flyElRect = flyEl.getBoundingClientRect()
+
+            if (!srcRect.width || !dstRect.width) return { x: 0, y: 0, scale: 1 }
+
+            const srcCx = srcRect.left + srcRect.width / 2
+            const srcCy = srcRect.top + srcRect.height / 2
+            const dstCx = dstRect.left + dstRect.width / 2
+            const dstCy = dstRect.top + dstRect.height / 2
+            const wCx = flyElRect.left + flyElRect.width / 2
+            const wCy = flyElRect.top + flyElRect.height / 2
+            const scale = dstRect.width / srcRect.width
+
+            const x = dstCx - wCx - scale * (srcCx - wCx)
+            const y = dstCy - wCy - scale * (srcCy - wCy)
+            return { x, y, scale }
+          }
+
+          const initial = calcTransform()
+          gsap.set(flyEl, { zIndex: 300, opacity: 1 })
+
+          gsap.to(flyEl, {
+            x: () => calcTransform().x,
+            y: () => calcTransform().y,
+            scale: () => calcTransform().scale,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: heroRef.current,
+              start: 'top top',
+              endTrigger: card,
+              end: window.innerWidth < 768 ? 'top 100px' : 'top 140px',
+              scrub: true,
+              invalidateOnRefresh: true,
+              onUpdate: (self) => {
+                heroRef.current.style.zIndex = self.progress > 0 && self.progress < 1 ? 25 : ''
+              },
+              onLeave: () => {
+                cardImg.style.opacity = '1'
+                flyEl.style.opacity = '0'
+                heroRef.current.style.zIndex = ''
+              },
+              onEnterBack: () => {
+                cardImg.style.opacity = '0'
+                flyEl.style.opacity = '1'
+              },
+            },
+          })
+        }, heroRef)
+      })
+    }
+
+    initFlight()
 
     return () => {
       cancelled = true
+      if (rafId) cancelAnimationFrame(rafId)
       ctx?.revert()
-      cardImg.style.opacity = ''
-      flyEl.style.opacity = ''
-      heroRef.current.style.zIndex = ''
-      gsap.set(flyEl, { zIndex: '', x: 0, y: 0, scale: 1 })
+      const flyEl = bottleFlyRefs.current[current.id]
+      const cardImg = document.querySelector(
+        `.bs-card-img[data-perfume-id="${current.id}"]`
+      )
+      if (cardImg) cardImg.style.opacity = ''
+      if (flyEl) {
+        flyEl.style.opacity = ''
+        gsap.set(flyEl, { zIndex: '', x: 0, y: 0, scale: 1 })
+      }
+      if (heroRef.current) heroRef.current.style.zIndex = ''
     }
   }, [index, current.id])
 
