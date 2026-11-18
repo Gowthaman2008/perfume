@@ -11,6 +11,7 @@ export default function useLenis() {
       lerp: 0.08,
       smoothWheel: true,
     })
+    window.__lenis = lenis
 
     lenis.on('scroll', ScrollTrigger.update)
 

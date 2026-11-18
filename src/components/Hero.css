@@ -434,35 +434,59 @@
 @media (max-width: 860px), (max-height: 620px) {
   .hero {
     min-height: auto;
-    padding-bottom: 16px;
+    padding-bottom: 20px;
   }
 
   .hero-main {
-    padding-top: 10px;
+    padding-top: 8px;
   }
 
   .hero-body {
+    display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     padding: 0 14px;
-    gap: 12px;
+    gap: 8px;
   }
 
-  .hero-text {
-    max-width: 100%;
+  /* Unbox hero-text and hero-right so their children participate directly in hero-body flex order */
+  .hero-text,
+  .hero-right {
+    display: contents;
   }
 
+  /* 1. Kicker pill badge at top */
   .hero-kicker-badge {
+    order: 1;
     font-size: 0.62rem;
     padding: 3px 10px;
-    margin-bottom: 6px;
+    margin-bottom: 2px;
   }
 
-  .hero-text h1 {
+  /* 2. Product bottle placed IN UP-SIDE of Thenee Herbal Tea text */
+  .hero-visual {
+    order: 2;
+    width: 190px;
+    height: 215px;
+    margin: 4px auto 6px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-bottle-img {
+    max-height: 205px;
+  }
+
+  /* 3. Thenee Herbal Tea main heading */
+  .hero-text h1,
+  .hero-body h1 {
+    order: 3;
     font-size: 1.65rem;
     line-height: 1.12;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
 
   .hero-title-subtext {
@@ -481,6 +505,7 @@
   }
 
   .hero-tamil-pill {
+    order: 4;
     display: none !important;
   }
 
@@ -488,15 +513,20 @@
     display: none !important;
   }
 
-  .hero-text p {
+  /* 4. Description */
+  .hero-text p,
+  .hero-body p {
+    order: 5;
     font-size: 0.78rem;
     line-height: 1.45;
     max-width: 320px;
     margin: 0 auto 10px;
   }
 
+  /* 5. Pricing */
   .hero-price-tag,
   .hero-price-row {
+    order: 6;
     justify-content: center;
     gap: 8px;
     margin-bottom: 12px;
@@ -522,13 +552,15 @@
     font-size: 0.68rem;
   }
 
+  /* 6. Action buttons */
   .hero-actions {
+    order: 7;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 8px;
     width: 100%;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
   .hero-actions .btn {
@@ -538,8 +570,10 @@
     white-space: nowrap;
   }
 
+  /* 7. Carousel Navigation */
   .hero-nav {
-    margin-top: 10px;
+    order: 8;
+    margin-top: 4px;
     justify-content: center;
     gap: 6px;
     flex-wrap: wrap;
@@ -558,25 +592,13 @@
     font-size: 0.68rem;
   }
 
-  .hero-right {
-    margin-top: 6px;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .hero-visual {
-    width: 180px;
-    height: 190px;
-  }
-
-  .hero-bottle-img {
-    max-height: 180px;
-  }
-
+  /* 8. Trust badges at bottom */
   .hero-badges {
+    order: 9;
     flex-direction: row;
-    gap: 6px;
-    margin-top: 8px;
+    gap: 8px;
+    margin-top: 14px;
+    justify-content: center;
   }
 
   .hero-badge {

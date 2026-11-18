@@ -28,12 +28,14 @@ const CartDrawer = () => {
   const [couponInput, setCouponInput] = useState('')
   const [couponError, setCouponError] = useState('')
 
-  // Lock body scroll when drawer open
+  // Lock body scroll and pause smooth scroll when drawer is open
   useEffect(() => {
     if (isCartOpen) {
       document.body.style.overflow = 'hidden'
+      if (window.__lenis) window.__lenis.stop()
       return () => {
         document.body.style.overflow = ''
+        if (window.__lenis) window.__lenis.start()
       }
     } else {
       setCouponError('')
@@ -91,24 +93,26 @@ const CartDrawer = () => {
           </button>
         </div>
 
-        {/* Free delivery progress */}
-        <div className="cart-shipping-banner">
-          <div className="cart-shipping-text">
-            {isFreeDelivery ? (
-              <span>🎉 You unlocked <strong>FREE Delivery</strong> across India!</span>
-            ) : (
-              <span>
-                Add <strong>₹{amountToFreeShipping}</strong> more to get <strong>FREE Delivery!</strong>
-              </span>
-            )}
+        {/* Free delivery progress - shown when cart has items */}
+        {cartItems.length > 0 && (
+          <div className="cart-shipping-banner">
+            <div className="cart-shipping-text">
+              {isFreeDelivery ? (
+                <span>🎉 You unlocked <strong>FREE Delivery</strong> across India!</span>
+              ) : (
+                <span>
+                  Add <strong>₹{amountToFreeShipping}</strong> more to get <strong>FREE Delivery!</strong>
+                </span>
+              )}
+            </div>
+            <div className="cart-shipping-bar">
+              <div
+                className="cart-shipping-fill"
+                style={{ width: `${isFreeDelivery ? 100 : progressPercent}%` }}
+              />
+            </div>
           </div>
-          <div className="cart-shipping-bar">
-            <div
-              className="cart-shipping-fill"
-              style={{ width: `${isFreeDelivery ? 100 : progressPercent}%` }}
-            />
-          </div>
-        </div>
+        )}
 
         {cartItems.length === 0 ? (
           <div className="cart-empty">
@@ -124,6 +128,7 @@ const CartDrawer = () => {
             >
               Explore Products
             </button>
+            <span className="cart-empty-perk">✨ Free shipping on orders above ₹499</span>
           </div>
         ) : (
           <>
