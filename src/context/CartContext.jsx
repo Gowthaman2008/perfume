@@ -17,6 +17,39 @@ export const CartProvider = ({ children }) => {
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [toastMessage, setToastMessage] = useState(null)
 
+  // Authenticated user state
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('thenee_auth_user')
+      return saved ? JSON.parse(saved) : null
+    } catch {
+      return null
+    }
+  })
+
+  const loginUser = (userData) => {
+    try {
+      localStorage.setItem('thenee_auth_user', JSON.stringify(userData))
+      localStorage.setItem('thenee_user', JSON.stringify(userData))
+      setCurrentUser(userData)
+      showToast(`Welcome back, ${userData.name || 'Member'}! 🌿`)
+    } catch {
+      setCurrentUser(userData)
+    }
+  }
+
+  const logoutUser = () => {
+    try {
+      localStorage.removeItem('thenee_auth_user')
+      setCurrentUser(null)
+      showToast('You have been signed out safely.')
+    } catch {
+      setCurrentUser(null)
+    }
+  }
+
+  const isLoggedIn = !!currentUser
+
   // Applied Coupon state
   const [appliedCoupon, setAppliedCoupon] = useState(() => {
     try {
@@ -207,6 +240,10 @@ export const CartProvider = ({ children }) => {
         setSelectedProduct,
         toastMessage,
         generateWhatsAppOrderUrl,
+        currentUser,
+        isLoggedIn,
+        loginUser,
+        logoutUser,
       }}
     >
       {children}

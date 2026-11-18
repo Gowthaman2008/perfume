@@ -47,7 +47,7 @@ const AboutUs = () => {
 
           <div className="about-card">
             <div className="about-card-icon">🪷</div>
-            <h3>Time-Tested Tamil Wisdom</h3>
+            <h3>Time-Tested Botanical Wisdom</h3>
             <p>
               From exquisite botanical floral brews like Bliss Tea to classic home-style stone-ground
               podis, our formulations honor centuries-old natural wellness routines passed down through

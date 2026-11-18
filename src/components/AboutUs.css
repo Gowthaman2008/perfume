@@ -3,11 +3,13 @@
   padding: 100px 48px;
   position: relative;
   border-top: 1px solid var(--border-color);
+  overflow: hidden;
 }
 
 .about-container {
   max-width: 1300px;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 .about-header {
@@ -193,10 +195,12 @@
 @media (max-width: 600px) {
   .about-thenee {
     padding: 34px 14px;
+    overflow: hidden;
   }
 
   .about-header {
     margin-bottom: 20px;
+    width: 100%;
   }
 
   .about-kicker {
@@ -207,21 +211,26 @@
   .about-header h2 {
     font-size: 1.45rem;
     margin-bottom: 8px;
+    word-break: break-word;
   }
 
   .about-intro {
     font-size: 0.78rem;
     line-height: 1.45;
+    word-break: break-word;
   }
 
   .about-pillars-grid {
     gap: 10px;
     margin-bottom: 22px;
+    width: 100%;
   }
 
   .about-card {
     padding: 16px 14px;
     border-radius: 14px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .about-card-icon {
@@ -251,8 +260,16 @@
   .about-trust-banner {
     padding: 14px 12px;
     border-radius: 14px;
-    gap: 10px;
+    gap: 12px;
     flex-direction: column;
     text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .about-trust-col {
+    min-width: 0 !important;
+    width: 100%;
+    justify-content: center;
   }
 }

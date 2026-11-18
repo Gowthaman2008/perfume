@@ -32,8 +32,20 @@
   --shadow-lift: 0 18px 40px rgba(49, 84, 58, 0.12);
 }
 
-html {
+html,
+body {
   scroll-behavior: auto;
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  width: 100% !important;
+  position: relative;
+}
+
+#root {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  width: 100% !important;
+  position: relative;
 }
 
 html.lenis,
@@ -176,5 +188,24 @@ ul {
     justify-content: center;
     padding: 10px 16px;
     font-size: 0.8rem;
+  }
+
+  /* User requirement: Tamil words not needed in mobile view */
+  .bs-card-tamil,
+  .hero-tamil-pill,
+  .pmodal-tamil,
+  .prod-tamil-title,
+  .podi-tamil,
+  .cart-item-tamil,
+  .wishlist-tamil,
+  .footer-logo-tamil,
+  .page-hero-tamil-sub,
+  .combo-tamil,
+  .tamil-word,
+  .tamil-text,
+  .navbar-brand-sub .tamil-text,
+  .hide-on-mobile-tamil,
+  [data-tamil="true"] {
+    display: none !important;
   }
 }

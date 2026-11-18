@@ -12,6 +12,7 @@ export default function useReveal(groups, sharedOptions = {}) {
   const ref = useRef(null)
 
   useEffect(() => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
     const list =
       typeof groups === 'string' ? [{ selector: groups, ...sharedOptions }] : groups
 
@@ -20,21 +21,25 @@ export default function useReveal(groups, sharedOptions = {}) {
         const targets = ref.current.querySelectorAll(g.selector)
         if (!targets.length) return
 
+        // On mobile, clamp horizontal x to 0 and gentle vertical y to avoid any horizontal viewport overflow
+        const xVal = isMobile ? 0 : (g.x ?? 0)
+        const yVal = isMobile ? Math.min(g.y ?? 24, 24) : (g.y ?? 60)
+
         gsap.from(targets, {
           opacity: 0,
-          y: g.y ?? 60,
-          x: g.x ?? 0,
-          rotateX: g.rotateX ?? 0,
-          rotateY: g.rotateY ?? 0,
-          scale: g.scale ?? 1,
+          y: yVal,
+          x: xVal,
+          rotateX: isMobile ? 0 : (g.rotateX ?? 0),
+          rotateY: isMobile ? 0 : (g.rotateY ?? 0),
+          scale: isMobile ? 1 : (g.scale ?? 1),
           transformPerspective: g.perspective ?? 1000,
           transformOrigin: g.transformOrigin ?? 'center center',
-          duration: g.duration ?? 0.9,
+          duration: isMobile ? 0.45 : (g.duration ?? 0.9),
           ease: g.ease ?? 'power3.out',
-          stagger: g.stagger ?? 0.1,
+          stagger: isMobile ? 0.04 : (g.stagger ?? 0.1),
           scrollTrigger: {
             trigger: ref.current,
-            start: g.start ?? 'top 80%',
+            start: g.start ?? (isMobile ? 'top 90%' : 'top 80%'),
           },
         })
       })

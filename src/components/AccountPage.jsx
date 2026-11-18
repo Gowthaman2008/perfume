@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
 import { products, individualPodis, brandInfo } from '../data/products'
 import { SkeletonOrderCard, ImageWithSkeleton } from './Skeleton'
+import LoginPage from './LoginPage'
 import Footer from './Footer'
 import './AccountPage.css'
 
@@ -80,8 +81,8 @@ const TAB_TITLES = {
   profile: 'Profile & Preferences',
 }
 
-const AccountPage = ({ onBack }) => {
-  const { totalCount, openCart, addToCart } = useCart()
+const AccountPage = ({ onBack, onLogout }) => {
+  const { totalCount, openCart, addToCart, currentUser, isLoggedIn, logoutUser } = useCart()
 
   // Track active sub-view ('hub' = main profile options view, or specific subpage)
   const [activeTab, setActiveTab] = useState(() => {
@@ -96,6 +97,16 @@ const AccountPage = ({ onBack }) => {
   const [activeTrackingOrder, setActiveTrackingOrder] = useState(null)
   const [copiedCoupon, setCopiedCoupon] = useState('')
   const [toastMsg, setToastMsg] = useState('')
+
+  // Strictly guard: without login, no user can open account page!
+  if (!isLoggedIn) {
+    return (
+      <LoginPage
+        onLoginSuccess={() => setActiveTab('hub')}
+        onBack={onBack}
+      />
+    )
+  }
 
   useEffect(() => {
     setIsLoadingTab(true)
@@ -135,29 +146,22 @@ const AccountPage = ({ onBack }) => {
 
   // User State
   const [user, setUser] = useState(() => {
-    try {
-      const saved = localStorage.getItem('thenee_user')
-      return saved ? JSON.parse(saved) : {
-        name: 'Gowtham',
-        contact: '+91 75502 48005',
-        email: 'gowtham@example.com',
-        joinedDate: 'Oct 2024',
-        points: 250,
-        language: 'English',
-        healthGoals: ['Blood Sugar Control', 'Internal Body Cooling', 'Gut Health'],
-      }
-    } catch {
-      return {
-        name: 'Gowtham',
-        contact: '+91 75502 48005',
-        email: 'gowtham@example.com',
-        joinedDate: 'Oct 2024',
-        points: 250,
-        language: 'English',
-        healthGoals: ['Blood Sugar Control', 'Internal Body Cooling'],
-      }
+    return currentUser || {
+      name: 'Member',
+      contact: '+91 75502 48005',
+      email: 'member@example.com',
+      joinedDate: 'Oct 2024',
+      points: 250,
+      language: 'English',
+      healthGoals: ['Blood Sugar Control', 'Internal Body Cooling', 'Gut Health'],
     }
   })
+
+  useEffect(() => {
+    if (currentUser) {
+      setUser(currentUser)
+    }
+  }, [currentUser])
 
   // Saved Addresses
   const [addresses, setAddresses] = useState(() => {
@@ -960,15 +964,8 @@ const AccountPage = ({ onBack }) => {
                       type="button"
                       className="btn-signout"
                       onClick={() => {
-                        localStorage.removeItem('thenee_user')
-                        setUser({
-                          name: 'Guest Customer',
-                          contact: '+91 00000 00000',
-                          email: '',
-                          points: 0,
-                          healthGoals: [],
-                        })
-                        showToast('Signed out of account.')
+                        logoutUser()
+                        if (onLogout) onLogout()
                       }}
                     >
                       Sign Out

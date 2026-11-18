@@ -15,22 +15,13 @@ const NAV_LINKS = [
 
 const Navbar = ({ onOpenAccount, currentRoute = 'home' }) => {
   const [open, setOpen] = useState(false)
-  const { totalCount, openCart } = useCart()
-
-  const [user] = useState(() => {
-    try {
-      const saved = localStorage.getItem('thenee_user')
-      return saved ? JSON.parse(saved) : null
-    } catch {
-      return null
-    }
-  })
+  const { totalCount, openCart, isLoggedIn, currentUser } = useCart()
 
   const handleAccountClick = () => {
     if (onOpenAccount) {
       onOpenAccount()
     } else {
-      window.location.hash = 'account'
+      window.location.hash = isLoggedIn ? 'account' : 'login'
       window.scrollTo({ top: 0, behavior: 'instant' })
     }
   }
@@ -77,7 +68,7 @@ const Navbar = ({ onOpenAccount, currentRoute = 'home' }) => {
         />
         <div className="navbar-brand-text">
           <span className="navbar-brand-title">THENEE</span>
-          <span className="navbar-brand-sub">தேனீ • Roots of Nature</span>
+          <span className="navbar-brand-sub"><span className="tamil-word">தேனீ • </span>Roots of Nature</span>
         </div>
       </a>
 
@@ -114,8 +105,8 @@ const Navbar = ({ onOpenAccount, currentRoute = 'home' }) => {
         <button
           className="navbar-account-btn"
           onClick={handleAccountClick}
-          aria-label="Open Account Portal"
-          title={user ? `Account: ${user.name}` : 'Open Account Portal & Orders'}
+          aria-label={isLoggedIn ? `Account (${currentUser?.name || 'User'})` : 'Login / Account Portal'}
+          title={isLoggedIn ? `Account: ${currentUser?.name || 'User'} (Signed In)` : 'Login to Account Portal'}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path
@@ -135,7 +126,7 @@ const Navbar = ({ onOpenAccount, currentRoute = 'home' }) => {
               strokeLinejoin="round"
             />
           </svg>
-          {user && <span className="navbar-account-dot" title="Signed In" />}
+          {isLoggedIn && <span className="navbar-account-dot" title="Signed In" />}
         </button>
 
         {/* Cart button with count */}

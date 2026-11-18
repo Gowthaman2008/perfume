@@ -20,11 +20,13 @@ import OurStoryPage from './components/OurStoryPage'
 import ReviewsPage from './components/ReviewsPage'
 import ContactPage from './components/ContactPage'
 import CheckoutPage from './components/CheckoutPage'
+import LoginPage from './components/LoginPage'
 import { CartProvider, useCart } from './context/CartContext'
 
 const parseRouteFromHash = () => {
   const hash = window.location.hash.replace('#', '')
   if (hash.startsWith('account')) return 'account'
+  if (hash.startsWith('login') || hash.startsWith('signin') || hash.startsWith('signup')) return 'login'
   if (hash.startsWith('checkout')) return 'checkout'
   if (hash === 'products' || hash === 'catalog') return 'products'
   if (hash === 'podis' || hash === 'food-podis') return 'podis'
@@ -39,7 +41,7 @@ const AppContent = () => {
   const [route, setRoute] = useState(parseRouteFromHash)
 
   useLenis()
-  const { toastMessage } = useCart()
+  const { toastMessage, isLoggedIn } = useCart()
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -52,8 +54,19 @@ const AppContent = () => {
   }, [])
 
   const navigateToAccount = () => {
-    window.location.hash = 'account'
-    setRoute('account')
+    if (isLoggedIn) {
+      window.location.hash = 'account'
+      setRoute('account')
+    } else {
+      window.location.hash = 'login'
+      setRoute('login')
+    }
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }
+
+  const navigateToLogin = () => {
+    window.location.hash = 'login'
+    setRoute('login')
     window.scrollTo({ top: 0, behavior: 'instant' })
   }
 
@@ -67,7 +80,28 @@ const AppContent = () => {
     <>
       <Loader />
 
-      {route === 'account' && <AccountPage onBack={navigateToHome} />}
+      {route === 'account' && (
+        isLoggedIn ? (
+          <AccountPage onBack={navigateToHome} onLogout={navigateToLogin} />
+        ) : (
+          <LoginPage
+            onLoginSuccess={() => {
+              window.location.hash = 'account'
+              setRoute('account')
+            }}
+            onBack={navigateToHome}
+          />
+        )
+      )}
+      {route === 'login' && (
+        <LoginPage
+          onLoginSuccess={() => {
+            window.location.hash = 'account'
+            setRoute('account')
+          }}
+          onBack={navigateToHome}
+        />
+      )}
       {route === 'checkout' && <CheckoutPage onBack={navigateToHome} onOpenAccount={navigateToAccount} />}
       {route === 'products' && <ProductsPage onOpenAccount={navigateToAccount} />}
       {route === 'podis' && <FoodPodisPage onOpenAccount={navigateToAccount} />}

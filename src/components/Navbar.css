@@ -742,12 +742,16 @@
     box-shadow: -8px 0 24px rgba(49, 84, 58, 0.12);
     border-left: 1px solid var(--border-color);
     transform: translateX(100%);
-    transition: transform 0.3s ease;
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform 0.3s ease, visibility 0.3s ease;
     z-index: 55;
   }
 
   .navbar-links.is-open {
     transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
   }
 
   .navbar-link {

@@ -1,6 +1,7 @@
 .promo-offers {
   background: var(--bg-main);
   padding: 60px 48px 90px;
+  overflow: hidden;
 }
 
 .promo-offers-grid {

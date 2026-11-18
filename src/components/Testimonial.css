@@ -1,6 +1,7 @@
 .testimonial {
   background: var(--bg-main);
   padding: 110px 48px;
+  overflow: hidden;
 }
 
 .testimonial-inner {
@@ -10,6 +11,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 80px;
   align-items: center;
+  overflow: hidden;
 }
 
 .testimonial-quote {
