@@ -1,30 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
 import { brandInfo } from '../data/products'
+import { orderService } from '../lib/supabase'
 import { ImageWithSkeleton } from './Skeleton'
 import './CheckoutPage.css'
-
-const INITIAL_ORDERS_FALLBACK = [
-  {
-    id: '#THN-84291',
-    date: '17 Nov 2026',
-    items: [
-      { name: 'Thenee Herbal Tea (100g Pouch & Jar)', qty: 1, price: 299, image: '/images/custom_thenee/herbal-tea-bottle.png' }
-    ],
-    total: 299,
-    status: 'Out for Delivery',
-    step: 3,
-    courier: 'India Post Speed Post',
-    awb: 'INP892014819TN',
-    destination: 'Tamil Nadu, India',
-    timeline: [
-      { title: 'Order Confirmed', time: '16 Nov, 09:30 AM', done: true },
-      { title: 'Handcrafted at Tenkasi Rural Unit', time: '16 Nov, 02:15 PM', done: true },
-      { title: 'Dispatched via Speed Post', time: '17 Nov, 08:00 AM', done: true },
-      { title: 'Out for Delivery', time: 'Today, 11:20 AM', done: true },
-    ]
-  }
-]
 
 const CheckoutPage = ({ onBack, onOpenAccount }) => {
   const {
@@ -38,6 +17,7 @@ const CheckoutPage = ({ onBack, onOpenAccount }) => {
     couponDiscount,
     grandTotal,
     clearCart,
+    currentUser,
   } = useCart()
 
   const [checkoutStep, setCheckoutStep] = useState('payment') // 'payment' | 'success'
@@ -46,14 +26,14 @@ const CheckoutPage = ({ onBack, onOpenAccount }) => {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   const [confirmedOrder, setConfirmedOrder] = useState(null)
 
-  // Shipping details state (pre-filled from localStorage)
+  // Shipping details state (pre-filled from user or saved address)
   const [shippingForm, setShippingForm] = useState({
-    name: 'Gowtham',
-    phone: '+91 75502 48005',
-    street: '2/104, Gandhi Street, Anna Nagar',
-    city: 'Tenkasi',
+    name: '',
+    phone: '',
+    street: '',
+    city: '',
     state: 'Tamil Nadu',
-    pincode: '627811',
+    pincode: '',
   })
 
   // Load existing user & address data on mount
@@ -61,17 +41,17 @@ const CheckoutPage = ({ onBack, onOpenAccount }) => {
     try {
       const savedUser = localStorage.getItem('thenee_user')
       const savedAddresses = localStorage.getItem('thenee_addresses')
-      let name = 'Gowtham'
-      let phone = '+91 75502 48005'
-      let street = '2/104, Gandhi Street, Anna Nagar'
-      let city = 'Tenkasi'
+      let name = currentUser?.name || ''
+      let phone = currentUser?.contact || ''
+      let street = ''
+      let city = ''
       let state = 'Tamil Nadu'
-      let pincode = '627811'
+      let pincode = ''
 
       if (savedUser) {
         const u = JSON.parse(savedUser)
-        if (u.name) name = u.name
-        if (u.contact) phone = u.contact
+        if (u.name && !name) name = u.name
+        if (u.contact && !phone) phone = u.contact
       }
       if (savedAddresses) {
         const addrs = JSON.parse(savedAddresses)
@@ -89,7 +69,7 @@ const CheckoutPage = ({ onBack, onOpenAccount }) => {
     } catch {
       // fallback
     }
-  }, [])
+  }, [currentUser])
 
   // Apply Coupon
   const handleApplyCoupon = (codeToApply) => {
@@ -108,7 +88,7 @@ const CheckoutPage = ({ onBack, onOpenAccount }) => {
   }
 
   // Handle Online Payment Execution
-  const handleExecutePayment = (e) => {
+  const handleExecutePayment = async (e) => {
     if (e) e.preventDefault()
 
     if (!shippingForm.name.trim() || !shippingForm.phone.trim() || !shippingForm.street.trim() || !shippingForm.pincode.trim()) {
@@ -118,59 +98,90 @@ const CheckoutPage = ({ onBack, onOpenAccount }) => {
 
     setIsProcessingPayment(true)
 
-    setTimeout(() => {
-      const orderId = `#THN-${Math.floor(80000 + Math.random() * 19000)}`
-      const awbId = `INP${Math.floor(800000000 + Math.random() * 190000000)}TN`
-      const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-      const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+    const orderId = `#THN-${Math.floor(80000 + Math.random() * 19000)}`
+    const awbId = `INP${Math.floor(800000000 + Math.random() * 190000000)}TN`
+    const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+    const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
 
-      const newOrder = {
-        id: orderId,
-        date: dateStr,
-        items: cartItems.map((item) => ({
-          name: `${item.name}${item.volume ? ` (${item.volume})` : ''}`,
-          qty: item.quantity,
-          price: item.price,
-          image: item.cardImage,
-        })),
+    const orderItems = cartItems.map((item) => ({
+      name: `${item.name}${item.volume ? ` (${item.volume})` : ''}`,
+      qty: item.quantity,
+      price: item.price,
+      image: item.cardImage,
+    }))
+
+    const newOrder = {
+      id: orderId,
+      date: dateStr,
+      items: orderItems,
+      total: grandTotal,
+      subtotal,
+      discount: couponDiscount,
+      couponCode: appliedCoupon ? appliedCoupon.code : null,
+      deliveryFee,
+      status: 'Order Confirmed',
+      step: 1,
+      courier: 'India Post Speed Post',
+      awb: awbId,
+      paymentMethod: 'Online Payment (UPI, Cards, NetBanking)',
+      destination: `${shippingForm.city || 'Tamil Nadu'}, ${shippingForm.state}`,
+      address: `${shippingForm.street}, ${shippingForm.city} - ${shippingForm.pincode}`,
+      recipient: shippingForm.name,
+      phone: shippingForm.phone,
+      timeline: [
+        { title: 'Payment Authorized & Order Confirmed', time: `${dateStr}, ${timeStr}`, done: true },
+        { title: 'Handcrafting at Tenkasi Rural Unit', time: 'Tomorrow, by 10:00 AM', done: false },
+        { title: 'Dispatch via Speed Post', time: 'Within 24-48 hours', done: false },
+        { title: 'Out for Delivery', time: 'Estimated 2-3 days', done: false },
+      ],
+    }
+
+    // Persist to Supabase Database
+    try {
+      await orderService.createOrder({
+        user_id: currentUser?.id || null,
+        order_id: orderId,
+        items: orderItems,
         total: grandTotal,
         subtotal,
         discount: couponDiscount,
-        couponCode: appliedCoupon ? appliedCoupon.code : null,
-        deliveryFee,
+        delivery_fee: deliveryFee,
         status: 'Order Confirmed',
-        step: 1,
         courier: 'India Post Speed Post',
         awb: awbId,
-        paymentMethod: 'Online Payment (UPI, Cards, NetBanking)',
-        destination: `${shippingForm.city}, ${shippingForm.state}`,
-        address: `${shippingForm.street}, ${shippingForm.city} - ${shippingForm.pincode}`,
-        recipient: shippingForm.name,
-        phone: shippingForm.phone,
-        timeline: [
-          { title: 'Payment Authorized & Order Confirmed', time: `${dateStr}, ${timeStr}`, done: true },
-          { title: 'Handcrafting at Tenkasi Rural Unit', time: 'Tomorrow, by 10:00 AM', done: false },
-          { title: 'Dispatch via Speed Post', time: 'Within 24-48 hours', done: false },
-          { title: 'Out for Delivery', time: 'Estimated 2-3 days', done: false },
-        ],
-      }
+        payment_method: 'Online Payment (UPI, Cards, NetBanking)',
+        shipping_address: {
+          recipient: shippingForm.name,
+          phone: shippingForm.phone,
+          street: shippingForm.street,
+          city: shippingForm.city,
+          state: shippingForm.state,
+          pincode: shippingForm.pincode,
+        },
+        timeline: newOrder.timeline,
+      })
+    } catch (dbErr) {
+      console.warn('Supabase order creation skipped/errored:', dbErr)
+    }
 
-      try {
-        const saved = localStorage.getItem('thenee_user_orders')
-        const currentOrders = saved ? JSON.parse(saved) : INITIAL_ORDERS_FALLBACK
-        const updated = [newOrder, ...currentOrders]
-        localStorage.setItem('thenee_user_orders', JSON.stringify(updated))
-        window.dispatchEvent(new Event('storage'))
-      } catch {
-        // fallback
-      }
+    // Persist to local storage for immediate access
+    try {
+      const saved = localStorage.getItem('thenee_user_orders')
+      const currentOrders = saved ? JSON.parse(saved) : []
+      const updated = [newOrder, ...currentOrders]
+      localStorage.setItem('thenee_user_orders', JSON.stringify(updated))
+      window.dispatchEvent(new Event('storage'))
+    } catch {
+      // fallback
+    }
 
+    setTimeout(() => {
       setConfirmedOrder(newOrder)
       clearCart()
       setIsProcessingPayment(false)
       setCheckoutStep('success')
       window.scrollTo({ top: 0, behavior: 'instant' })
-    }, 1200)
+    }, 600)
   }
 
   // Navigate to Account orders tracking

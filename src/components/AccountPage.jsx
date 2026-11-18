@@ -1,70 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
 import { products, individualPodis, brandInfo } from '../data/products'
+import { orderService, profileService } from '../lib/supabase'
 import { SkeletonOrderCard, ImageWithSkeleton } from './Skeleton'
 import LoginPage from './LoginPage'
 import Footer from './Footer'
 import './AccountPage.css'
-
-const INITIAL_ORDERS = [
-  {
-    id: '#THN-84291',
-    date: '17 Nov 2026',
-    items: [
-      { name: 'Thenee Herbal Tea (100g Pouch & Jar)', qty: 1, price: 299, image: '/images/custom_thenee/herbal-tea-bottle.png' }
-    ],
-    total: 299,
-    status: 'Out for Delivery',
-    step: 3,
-    courier: 'India Post Speed Post',
-    awb: 'INP892014819TN',
-    destination: 'Tamil Nadu, India',
-    timeline: [
-      { title: 'Order Confirmed', time: '16 Nov, 09:30 AM', done: true },
-      { title: 'Handcrafted at Tenkasi Rural Unit', time: '16 Nov, 02:15 PM', done: true },
-      { title: 'Dispatched via Speed Post', time: '17 Nov, 08:00 AM', done: true },
-      { title: 'Out for Delivery', time: 'Today, 11:20 AM', done: true },
-    ]
-  },
-  {
-    id: '#THN-73912',
-    date: '02 Nov 2026',
-    items: [
-      { name: 'Traditional Food Podis (Set of 4)', qty: 1, price: 699, image: '/images/custom_thenee/food-podis-product.jpg' }
-    ],
-    total: 699,
-    status: 'Delivered',
-    step: 4,
-    courier: 'BlueDart Express',
-    awb: 'BLD33918204TN',
-    destination: 'Chennai, Tamil Nadu',
-    timeline: [
-      { title: 'Order Confirmed', time: '02 Nov, 10:00 AM', done: true },
-      { title: 'Handcrafted at Tenkasi Rural Unit', time: '02 Nov, 03:30 PM', done: true },
-      { title: 'Dispatched', time: '03 Nov, 09:00 AM', done: true },
-      { title: 'Delivered Safely', time: '05 Nov, 02:40 PM', done: true },
-    ]
-  },
-  {
-    id: '#THN-61840',
-    date: '18 Oct 2026',
-    items: [
-      { name: 'Pure Moringa Powder (150g Natural Pouch)', qty: 1, price: 249, image: '/images/custom_thenee/moringa-powder-product.jpg' }
-    ],
-    total: 249,
-    status: 'Delivered',
-    step: 4,
-    courier: 'DTDC Courier',
-    awb: 'DTD99104812TN',
-    destination: 'Madurai, Tamil Nadu',
-    timeline: [
-      { title: 'Order Confirmed', time: '18 Oct, 11:00 AM', done: true },
-      { title: 'Handcrafted at Tenkasi Rural Unit', time: '18 Oct, 04:00 PM', done: true },
-      { title: 'Dispatched', time: '19 Oct, 10:00 AM', done: true },
-      { title: 'Delivered Safely', time: '21 Oct, 01:15 PM', done: true },
-    ]
-  }
-]
 
 const COUPONS = [
   { code: 'HERBALFIRST', discount: '15% OFF', desc: 'Valid on your first order above ₹399', minOrder: 399 },
@@ -114,15 +55,66 @@ const AccountPage = ({ onBack, onLogout }) => {
     return () => clearTimeout(timer)
   }, [activeTab])
 
-  // Orders State
+  // Orders State (loaded from Supabase / localStorage)
   const [ordersList, setOrdersList] = useState(() => {
     try {
       const saved = localStorage.getItem('thenee_user_orders')
-      return saved ? JSON.parse(saved) : INITIAL_ORDERS
+      return saved ? JSON.parse(saved) : []
     } catch {
-      return INITIAL_ORDERS
+      return []
     }
   })
+
+  // User State
+  const [user, setUser] = useState(() => {
+    return currentUser || {
+      name: 'Valued Customer',
+      contact: '',
+      email: '',
+      joinedDate: 'Nov 2026',
+      points: 0,
+      language: 'English',
+      healthGoals: ['Blood Sugar Control', 'Internal Body Cooling', 'Gut Health'],
+    }
+  })
+
+  // Fetch Supabase data on mount / auth change
+  useEffect(() => {
+    let isMounted = true
+    const loadSupabaseData = async () => {
+      if (currentUser?.id) {
+        try {
+          const res = await orderService.getUserOrders(currentUser.id)
+          const dbOrders = res?.data || (Array.isArray(res) ? res : null)
+          if (isMounted && dbOrders && dbOrders.length > 0) {
+            setOrdersList(dbOrders)
+            localStorage.setItem('thenee_user_orders', JSON.stringify(dbOrders))
+          }
+        } catch (e) {
+          console.warn('Could not fetch orders from Supabase:', e)
+        }
+
+        try {
+          const res = await profileService.getProfile(currentUser.id)
+          const profile = res?.data || res
+          if (isMounted && profile) {
+            setUser((prev) => ({
+              ...prev,
+              ...profile,
+              name: profile.full_name || prev.name,
+              points: profile.reward_points ?? profile.green_points ?? prev.points,
+            }))
+          }
+        } catch (e) {
+          console.warn('Could not fetch profile from Supabase:', e)
+        }
+      }
+    }
+    loadSupabaseData()
+    return () => {
+      isMounted = false
+    }
+  }, [currentUser])
 
   // Re-sync orders when tab changes or storage updates
   useEffect(() => {
@@ -144,22 +136,13 @@ const AccountPage = ({ onBack, onLogout }) => {
     }
   }, [])
 
-  // User State
-  const [user, setUser] = useState(() => {
-    return currentUser || {
-      name: 'Member',
-      contact: '+91 75502 48005',
-      email: 'member@example.com',
-      joinedDate: 'Oct 2024',
-      points: 250,
-      language: 'English',
-      healthGoals: ['Blood Sugar Control', 'Internal Body Cooling', 'Gut Health'],
-    }
-  })
-
   useEffect(() => {
     if (currentUser) {
-      setUser(currentUser)
+      setUser((prev) => ({
+        ...prev,
+        ...currentUser,
+        name: currentUser.name || prev.name,
+      }))
     }
   }, [currentUser])
 
@@ -167,32 +150,7 @@ const AccountPage = ({ onBack, onLogout }) => {
   const [addresses, setAddresses] = useState(() => {
     try {
       const saved = localStorage.getItem('thenee_addresses')
-      return saved ? JSON.parse(saved) : [
-        {
-          id: 'addr-1',
-          name: 'Gowtham',
-          phone: '+91 75502 48005',
-          street: '2/104, Gandhi Street, Anna Nagar',
-          city: 'Tenkasi',
-          district: 'Tenkasi District',
-          state: 'Tamil Nadu',
-          pincode: '627811',
-          isDefault: true,
-          type: 'Home',
-        },
-        {
-          id: 'addr-2',
-          name: 'Gowtham (Work)',
-          phone: '+91 75502 48005',
-          street: 'Main Road, Near Railway Junction',
-          city: 'Tirunelveli',
-          district: 'Tirunelveli District',
-          state: 'Tamil Nadu',
-          pincode: '627001',
-          isDefault: false,
-          type: 'Office',
-        }
-      ]
+      return saved ? JSON.parse(saved) : []
     } catch {
       return []
     }
@@ -219,11 +177,20 @@ const AccountPage = ({ onBack, onLogout }) => {
 
   // Profile Edit State
   const [profileForm, setProfileForm] = useState({
-    name: user.name,
+    name: user.name || '',
     email: user.email || '',
-    contact: user.contact,
+    contact: user.contact || '',
     language: user.language || 'English',
   })
+
+  useEffect(() => {
+    setProfileForm({
+      name: user.name || '',
+      email: user.email || '',
+      contact: user.contact || '',
+      language: user.language || 'English',
+    })
+  }, [user])
 
   // Sync hash routing
   useEffect(() => {
@@ -263,11 +230,23 @@ const AccountPage = ({ onBack, onLogout }) => {
     setTimeout(() => setCopiedCoupon(''), 3000)
   }
 
-  const handleSaveProfile = (e) => {
+  const handleSaveProfile = async (e) => {
     e.preventDefault()
     const updated = { ...user, ...profileForm }
     setUser(updated)
     localStorage.setItem('thenee_user', JSON.stringify(updated))
+    if (currentUser?.id) {
+      try {
+        await profileService.updateProfile(currentUser.id, {
+          full_name: profileForm.name,
+          contact: profileForm.contact,
+          email: profileForm.email,
+          language: profileForm.language,
+        })
+      } catch (err) {
+        console.warn('Supabase profile update warning:', err)
+      }
+    }
     showToast('Profile information saved successfully!')
   }
 
@@ -320,6 +299,10 @@ const AccountPage = ({ onBack, onLogout }) => {
     showToast(`Items from ${order.id} added to cart!`)
   }
 
+  const activeShipments = ordersList.filter(
+    (o) => o.status === 'Out for Delivery' || o.status === 'In Transit' || o.status === 'Order Confirmed' || o.status === 'Processing'
+  ).length
+
   return (
     <div className="account-page">
       {/* Top Navbar */}
@@ -352,8 +335,8 @@ const AccountPage = ({ onBack, onLogout }) => {
 
         <div className="account-nav-right">
           <div className="account-user-chip" onClick={() => navigateTab('profile')}>
-            <span className="user-chip-avatar">{user.name.charAt(0).toUpperCase()}</span>
-            <span className="user-chip-name">{user.name}</span>
+            <span className="user-chip-avatar">{(user.name || 'U').charAt(0).toUpperCase()}</span>
+            <span className="user-chip-name">{user.name || 'Member'}</span>
           </div>
 
           <button className="account-cart-btn" onClick={openCart} aria-label="Shopping Cart">
@@ -381,10 +364,10 @@ const AccountPage = ({ onBack, onLogout }) => {
           {/* Hero Profile Summary Card */}
           <div className="profile-hub-hero">
             <div className="profile-hub-user-left">
-              <div className="profile-hub-avatar">{user.name.charAt(0).toUpperCase()}</div>
+              <div className="profile-hub-avatar">{(user.name || 'U').charAt(0).toUpperCase()}</div>
               <div className="profile-hub-user-text">
-                <h2>{user.name}</h2>
-                <p>{user.contact} • {user.email || 'Tamil Nadu'}</p>
+                <h2>{user.name || 'Valued Customer'}</h2>
+                <p>{user.contact || user.email || 'Tamil Nadu'}{user.email && user.contact ? ` • ${user.email}` : ''}</p>
                 <div className="profile-hub-pill-row">
                   <span className="hub-badge-verified">🌿 Verified Wellness Member</span>
                   <span className="hub-badge-tenkasi">Tenkasi Rural Roots</span>
@@ -394,13 +377,17 @@ const AccountPage = ({ onBack, onLogout }) => {
 
             <div className="profile-hub-metrics-strip">
               <div className="hub-stat-item" onClick={() => navigateTab('rewards')}>
-                <span className="hub-stat-val">{user.points} <small>pts</small></span>
-                <span className="hub-stat-lbl">Green Points (₹{Math.floor(user.points / 2)})</span>
+                <span className="hub-stat-val">{user.points || 0} <small>pts</small></span>
+                <span className="hub-stat-lbl">Green Points (₹{Math.floor((user.points || 0) / 2)})</span>
               </div>
               <div className="hub-stat-divider" />
               <div className="hub-stat-item" onClick={() => navigateTab('orders')}>
-                <span className="hub-stat-val">1 Live</span>
-                <span className="hub-stat-lbl">Shipment in Transit</span>
+                <span className="hub-stat-val">
+                  {activeShipments > 0 ? `${activeShipments} Live` : `${ordersList.length} Total`}
+                </span>
+                <span className="hub-stat-lbl">
+                  {activeShipments > 0 ? 'Shipment in Transit' : 'Orders Placed'}
+                </span>
               </div>
             </div>
           </div>
@@ -419,7 +406,9 @@ const AccountPage = ({ onBack, onLogout }) => {
               <div className="hub-option-info">
                 <div className="hub-option-title-row">
                   <h4>My Orders & Live Tracking</h4>
-                  <span className="hub-badge-pill pill-live">1 In Transit</span>
+                  <span className={`hub-badge-pill ${activeShipments > 0 ? 'pill-live' : ''}`}>
+                    {activeShipments > 0 ? `${activeShipments} In Transit` : `${ordersList.length} Orders`}
+                  </span>
                 </div>
               </div>
               <span className="hub-arrow-chevron">➔</span>
@@ -530,6 +519,17 @@ const AccountPage = ({ onBack, onLogout }) => {
                   <SkeletonOrderCard />
                   <SkeletonOrderCard />
                 </div>
+              ) : ordersList.length === 0 ? (
+                <div className="empty-state-card" style={{ padding: '40px 20px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '2.8rem', marginBottom: '10px' }}>📦</div>
+                  <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: '#1B3524' }}>No orders placed yet</h3>
+                  <p style={{ color: '#5C6E60', fontSize: '0.9rem', maxWidth: '360px', margin: '0 auto 20px' }}>
+                    Your order history and live Speed Post consignment tracking will appear here once you place an order.
+                  </p>
+                  <button className="btn-primary" onClick={onBack}>
+                    Explore Herbal Products →
+                  </button>
+                </div>
               ) : (
                 <div className="orders-list">
                   {ordersList.map((order) => (
@@ -625,30 +625,43 @@ const AccountPage = ({ onBack, onLogout }) => {
               </div>
 
               <div className="addresses-grid">
-                {addresses.map((addr) => (
-                  <div className={`address-card ${addr.isDefault ? 'is-default' : ''}`} key={addr.id}>
-                    <div className="addr-card-top">
-                      <span className="addr-type-pill">{addr.type}</span>
-                      {addr.isDefault && <span className="addr-default-badge">Default Address</span>}
-                    </div>
-
-                    <h4 className="addr-name">{addr.name}</h4>
-                    <p className="addr-line">{addr.street}</p>
-                    <p className="addr-line">{addr.city}, {addr.district || addr.state} - <strong>{addr.pincode}</strong></p>
-                    <p className="addr-phone">Phone: {addr.phone}</p>
-
-                    <div className="addr-actions">
-                      {!addr.isDefault && (
-                        <button className="btn-addr-link" onClick={() => handleSetDefaultAddress(addr.id)}>
-                          Set as Default
-                        </button>
-                      )}
-                      <button className="btn-addr-delete" onClick={() => handleDeleteAddress(addr.id)}>
-                        Remove
-                      </button>
-                    </div>
+                {addresses.length === 0 ? (
+                  <div className="empty-state-card" style={{ gridColumn: '1 / -1', padding: '40px 20px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '2.8rem', marginBottom: '10px' }}>📍</div>
+                    <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: '#1B3524' }}>No saved addresses</h3>
+                    <p style={{ color: '#5C6E60', fontSize: '0.9rem', maxWidth: '360px', margin: '0 auto 20px' }}>
+                      Save your home or work delivery address for fast 1-click checkout.
+                    </p>
+                    <button className="btn-primary" onClick={() => setShowAddressModal(true)}>
+                      + Add New Address
+                    </button>
                   </div>
-                ))}
+                ) : (
+                  addresses.map((addr) => (
+                    <div className={`address-card ${addr.isDefault ? 'is-default' : ''}`} key={addr.id}>
+                      <div className="addr-card-top">
+                        <span className="addr-type-pill">{addr.type}</span>
+                        {addr.isDefault && <span className="addr-default-badge">Default Address</span>}
+                      </div>
+
+                      <h4 className="addr-name">{addr.name}</h4>
+                      <p className="addr-line">{addr.street}</p>
+                      <p className="addr-line">{addr.city}, {addr.district || addr.state} - <strong>{addr.pincode}</strong></p>
+                      <p className="addr-phone">Phone: {addr.phone}</p>
+
+                      <div className="addr-actions">
+                        {!addr.isDefault && (
+                          <button className="btn-addr-link" onClick={() => handleSetDefaultAddress(addr.id)}>
+                            Set as Default
+                          </button>
+                        )}
+                        <button className="btn-addr-delete" onClick={() => handleDeleteAddress(addr.id)}>
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
 
               {/* Add Address Modal */}
@@ -797,7 +810,8 @@ const AccountPage = ({ onBack, onLogout }) => {
                 <button
                   className="btn-referral-copy"
                   onClick={() => {
-                    navigator.clipboard.writeText('https://theneeherbal.in/ref?code=THN-GOWTHAM')
+                    const refCode = `THN-${(user.name || 'MEMBER').replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 8) || 'MEMBER'}`
+                    navigator.clipboard.writeText(`https://thenee-enterprises.vercel.app/ref?code=${refCode}`)
                     showToast('Referral link copied to clipboard!')
                   }}
                 >

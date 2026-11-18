@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { brandInfo } from '../data/products'
+import { authService, isSupabaseConfigured } from '../lib/supabase'
 
 const CartContext = createContext()
 
@@ -27,12 +28,43 @@ export const CartProvider = ({ children }) => {
     }
   })
 
+  // Sync with Supabase Auth state if configured
+  useEffect(() => {
+    if (!isSupabaseConfigured) return
+
+    const { data: authListener } = authService.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const u = session.user
+        const userData = {
+          id: u.id,
+          name: u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split('@')[0] || 'Member',
+          email: u.email || '',
+          contact: u.phone || u.user_metadata?.phone || '',
+          authProvider: u.app_metadata?.provider || 'supabase',
+          joinedDate: new Date(u.created_at || Date.now()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+          points: 100,
+        }
+        localStorage.setItem('thenee_auth_user', JSON.stringify(userData))
+        localStorage.setItem('thenee_user', JSON.stringify(userData))
+        setCurrentUser(userData)
+      } else if (event === 'SIGNED_OUT') {
+        localStorage.removeItem('thenee_auth_user')
+        localStorage.removeItem('thenee_user')
+        setCurrentUser(null)
+      }
+    })
+
+    return () => {
+      authListener?.subscription?.unsubscribe()
+    }
+  }, [])
+
   const loginUser = (userData) => {
     try {
       localStorage.setItem('thenee_auth_user', JSON.stringify(userData))
       localStorage.setItem('thenee_user', JSON.stringify(userData))
       setCurrentUser(userData)
-      showToast(`Welcome back, ${userData.name || 'Member'}! 🌿`)
+      showToast(`Welcome, ${userData.name || 'Member'}! 🌿`)
     } catch {
       setCurrentUser(userData)
     }
@@ -40,7 +72,11 @@ export const CartProvider = ({ children }) => {
 
   const logoutUser = () => {
     try {
+      if (isSupabaseConfigured) {
+        authService.signOut().catch(() => {})
+      }
       localStorage.removeItem('thenee_auth_user')
+      localStorage.removeItem('thenee_user')
       setCurrentUser(null)
       showToast('You have been signed out safely.')
     } catch {

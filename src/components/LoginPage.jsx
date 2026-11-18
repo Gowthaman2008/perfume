@@ -1,21 +1,7 @@
 import { useState } from 'react'
 import { useCart } from '../context/CartContext'
+import { authService, isSupabaseConfigured } from '../lib/supabase'
 import './LoginPage.css'
-
-const DEMO_USER = {
-  name: 'Gowtham',
-  contact: '+91 75502 48005',
-  email: 'gowtham@example.com',
-  address: '2/104, Gandhi Street, Anna Nagar',
-  city: 'Tenkasi',
-  district: 'Tenkasi District',
-  pincode: '627811',
-  state: 'Tamil Nadu',
-  joinedDate: 'Oct 2024',
-  points: 250,
-  language: 'English',
-  healthGoals: ['Blood Sugar Control', 'Internal Body Cooling', 'Gut Health'],
-}
 
 const LoginPage = ({ onLoginSuccess, onBack, redirectTarget }) => {
   const { loginUser } = useCart()
@@ -27,18 +13,18 @@ const LoginPage = ({ onLoginSuccess, onBack, redirectTarget }) => {
   // Primary view: 'signin' | 'signup'
   const [view, setView] = useState('signin')
 
-  // Auth method under signin: 'phone' | 'email'
-  const [authMethod, setAuthMethod] = useState('phone')
-
-  // Phone OTP States
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [otpSent, setOtpSent] = useState(false)
-  const [otpCode, setOtpCode] = useState('')
+  // Auth method under signin: 'email' | 'phone'
+  const [authMethod, setAuthMethod] = useState('email')
 
   // Email States
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+
+  // Phone OTP States
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [otpSent, setOtpSent] = useState(false)
+  const [otpCode, setOtpCode] = useState('')
 
   // Registration Form
   const [signupForm, setSignupForm] = useState({
@@ -49,344 +35,328 @@ const LoginPage = ({ onLoginSuccess, onBack, redirectTarget }) => {
   })
 
   const [errorMessage, setErrorMessage] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  // 1-Click Demo Login
-  const handleQuickDemoLogin = () => {
+  // Handle Google OAuth Login via Supabase
+  const handleGoogleLogin = async () => {
     setIsLoading(true)
     setErrorMessage('')
-    setTimeout(() => {
-      loginUser(DEMO_USER)
-      setIsLoading(false)
-      if (onLoginSuccess) onLoginSuccess()
-    }, 300)
-  }
+    setSuccessMessage('')
 
-  // Handle Google Login
-  const handleGoogleLogin = () => {
-    setIsLoading(true)
-    setErrorMessage('')
-    setTimeout(() => {
-      const googleUser = {
-        name: 'Gowtham',
-        contact: '+91 75502 48005',
-        email: 'gowtham@gmail.com',
-        address: '2/104, Gandhi Street, Anna Nagar',
-        city: 'Tenkasi',
-        district: 'Tenkasi District',
-        pincode: '627811',
-        state: 'Tamil Nadu',
-        joinedDate: 'Oct 2024',
-        points: 250,
-        language: 'English',
-        healthGoals: ['Blood Sugar Control', 'Internal Body Cooling', 'Gut Health'],
-        authProvider: 'google',
-      }
-      loginUser(googleUser)
+    if (!isSupabaseConfigured) {
       setIsLoading(false)
-      if (onLoginSuccess) onLoginSuccess()
-    }, 350)
-  }
-
-  // Handle Send OTP
-  const handleSendOtp = (e) => {
-    e.preventDefault()
-    setErrorMessage('')
-    const clean = phoneNumber.replace(/\D/g, '')
-    if (clean.length < 10) {
-      setErrorMessage('Please enter a valid 10-digit mobile number')
+      setErrorMessage('Database keys pending. Please add your Supabase URL & Anon Key to .env to enable Google Login.')
       return
     }
 
-    setIsLoading(true)
-    setTimeout(() => {
+    const { error } = await authService.signInWithGoogle()
+    if (error) {
       setIsLoading(false)
-      setOtpSent(true)
-    }, 350)
-  }
-
-  // Handle Verify OTP
-  const handleVerifyOtp = (e) => {
-    e.preventDefault()
-    setErrorMessage('')
-
-    if (!otpCode || otpCode.trim().length !== 4) {
-      setErrorMessage('Please enter the 4-digit verification code')
-      return
+      setErrorMessage(error.message || 'Google sign-in failed. Please try again.')
     }
-
-    setIsLoading(true)
-    setTimeout(() => {
-      setIsLoading(false)
-      const clean = phoneNumber.replace(/\D/g, '').slice(-10)
-      const isDemo = clean === '7550248005'
-      const user = isDemo
-        ? DEMO_USER
-        : {
-            name: `Member (${clean.slice(-4)})`,
-            contact: `+91 ${clean}`,
-            email: '',
-            joinedDate: 'Nov 2026',
-            points: 100,
-            language: 'English',
-            healthGoals: ['Daily Botanical Wellness'],
-          }
-
-      loginUser(user)
-      if (onLoginSuccess) onLoginSuccess()
-    }, 350)
   }
 
-  // Handle Email Login
-  const handleEmailLogin = (e) => {
+  // Handle Email & Password Sign In
+  const handleEmailLogin = async (e) => {
     e.preventDefault()
     setErrorMessage('')
+    setSuccessMessage('')
 
     if (!email || !email.includes('@')) {
-      setErrorMessage('Please enter a valid email address')
+      setErrorMessage('Please enter a valid email address.')
       return
     }
-    if (!password || password.length < 4) {
-      setErrorMessage('Password must be at least 4 characters')
+    if (!password || password.length < 6) {
+      setErrorMessage('Password must be at least 6 characters.')
       return
     }
 
     setIsLoading(true)
-    setTimeout(() => {
+
+    if (isSupabaseConfigured) {
+      const { data, error } = await authService.signInWithEmail({ email, password })
+      setIsLoading(false)
+
+      if (error) {
+        setErrorMessage(error.message || 'Invalid email or password.')
+        return
+      }
+
+      if (data?.user) {
+        const u = data.user
+        const userData = {
+          id: u.id,
+          name: u.user_metadata?.full_name || u.email?.split('@')[0] || 'Member',
+          email: u.email,
+          contact: u.phone || u.user_metadata?.phone || '',
+          joinedDate: new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+          points: 100,
+        }
+        loginUser(userData)
+        if (onLoginSuccess) onLoginSuccess()
+      }
+    } else {
+      // Fallback local session if Supabase keys not provided yet
       setIsLoading(false)
       const namePart = email.split('@')[0]
       const capitalized = namePart.charAt(0).toUpperCase() + namePart.slice(1)
       const user = {
         name: capitalized,
-        contact: '+91 75502 48005',
         email,
-        joinedDate: 'Nov 2026',
-        points: 150,
-        language: 'English',
-        healthGoals: ['Blood Sugar Control', 'Immunity'],
+        contact: '',
+        joinedDate: 'Today',
+        points: 100,
       }
-
       loginUser(user)
       if (onLoginSuccess) onLoginSuccess()
-    }, 350)
+    }
   }
 
-  // Handle Signup
-  const handleSignup = (e) => {
+  // Handle Send Phone OTP
+  const handleSendOtp = async (e) => {
     e.preventDefault()
     setErrorMessage('')
+    setSuccessMessage('')
 
-    if (!signupForm.name.trim()) {
-      setErrorMessage('Please enter your full name')
-      return
-    }
-    const clean = signupForm.phone.replace(/\D/g, '')
+    const clean = phoneNumber.replace(/\D/g, '')
     if (clean.length < 10) {
-      setErrorMessage('Please enter a valid 10-digit mobile number')
+      setErrorMessage('Please enter a valid 10-digit mobile number.')
       return
     }
 
     setIsLoading(true)
-    setTimeout(() => {
+
+    if (isSupabaseConfigured) {
+      const fullPhone = `+91${clean.slice(-10)}`
+      const { error } = await authService.signInWithOtp({ phone: fullPhone })
       setIsLoading(false)
-      const user = {
-        name: signupForm.name.trim(),
-        contact: `+91 ${clean.slice(-10)}`,
-        email: signupForm.email.trim(),
-        joinedDate: 'Nov 2026',
-        points: 100,
-        language: 'English',
-        healthGoals: ['Daily Botanical Wellness'],
+
+      if (error) {
+        setErrorMessage(error.message || 'Failed to send OTP. Please check your number or try email login.')
+        return
       }
 
+      setOtpSent(true)
+      setSuccessMessage(`Verification code sent to +91 ${clean.slice(-10)}`)
+    } else {
+      setIsLoading(false)
+      setErrorMessage('SMS service requires Supabase Twilio/MessageBird setup. Please use Email login.')
+    }
+  }
+
+  // Handle Verify Phone OTP
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault()
+    setErrorMessage('')
+    setSuccessMessage('')
+
+    if (!otpCode || otpCode.trim().length < 4) {
+      setErrorMessage('Please enter the 6-digit verification code.')
+      return
+    }
+
+    setIsLoading(true)
+
+    if (isSupabaseConfigured) {
+      const clean = phoneNumber.replace(/\D/g, '').slice(-10)
+      const fullPhone = `+91${clean}`
+      const { data, error } = await authService.verifyOtp({ phone: fullPhone, token: otpCode.trim() })
+      setIsLoading(false)
+
+      if (error) {
+        setErrorMessage(error.message || 'Invalid or expired verification code.')
+        return
+      }
+
+      if (data?.user) {
+        const u = data.user
+        const userData = {
+          id: u.id,
+          name: u.user_metadata?.full_name || `Member (${clean.slice(-4)})`,
+          contact: fullPhone,
+          email: u.email || '',
+          joinedDate: new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+          points: 100,
+        }
+        loginUser(userData)
+        if (onLoginSuccess) onLoginSuccess()
+      }
+    }
+  }
+
+  // Handle User Registration (Sign Up)
+  const handleSignup = async (e) => {
+    e.preventDefault()
+    setErrorMessage('')
+    setSuccessMessage('')
+
+    if (!signupForm.name.trim()) {
+      setErrorMessage('Please enter your full name.')
+      return
+    }
+    if (!signupForm.email || !signupForm.email.includes('@')) {
+      setErrorMessage('Please enter a valid email address.')
+      return
+    }
+    if (!signupForm.password || signupForm.password.length < 6) {
+      setErrorMessage('Password must be at least 6 characters.')
+      return
+    }
+
+    setIsLoading(true)
+
+    if (isSupabaseConfigured) {
+      const cleanPhone = signupForm.phone.replace(/\D/g, '').slice(-10)
+      const fullPhone = cleanPhone ? `+91 ${cleanPhone}` : ''
+
+      const { data, error } = await authService.signUp({
+        email: signupForm.email.trim(),
+        password: signupForm.password,
+        fullName: signupForm.name.trim(),
+        phone: fullPhone,
+      })
+
+      setIsLoading(false)
+
+      if (error) {
+        setErrorMessage(error.message || 'Registration failed. Please try again.')
+        return
+      }
+
+      if (data?.user) {
+        // If Supabase has email confirmation enabled
+        if (data.user.identities && data.user.identities.length === 0) {
+          setErrorMessage('An account with this email already exists. Please sign in.')
+          return
+        }
+
+        const userData = {
+          id: data.user.id,
+          name: signupForm.name.trim(),
+          contact: fullPhone,
+          email: signupForm.email.trim(),
+          joinedDate: 'Today',
+          points: 100,
+        }
+        loginUser(userData)
+        if (onLoginSuccess) onLoginSuccess()
+      }
+    } else {
+      setIsLoading(false)
+      const cleanPhone = signupForm.phone.replace(/\D/g, '').slice(-10)
+      const user = {
+        name: signupForm.name.trim(),
+        contact: cleanPhone ? `+91 ${cleanPhone}` : '',
+        email: signupForm.email.trim(),
+        joinedDate: 'Today',
+        points: 100,
+      }
       loginUser(user)
       if (onLoginSuccess) onLoginSuccess()
-    }, 400)
+    }
   }
 
   return (
-    <div className="pro-login-page">
+    <div className="pro-login-wrapper">
       {/* Top Header */}
       <header className="pro-login-header">
-        <div className="pro-login-header-inner">
-          <button
-            type="button"
-            className="pro-back-btn"
-            onClick={onBack || (() => { window.location.hash = 'home' })}
-            aria-label="Return to store"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span>Back to Store</span>
-          </button>
+        <button className="pro-back-btn" onClick={onBack} aria-label="Go back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span>Back to Store</span>
+        </button>
 
-          <a href="#home" className="pro-brand" onClick={(e) => { e.preventDefault(); if (onBack) onBack(); else window.location.hash = 'home'; }}>
+        <div className="pro-brand-lockup">
+          <img
+            src="/images/custom_thenee/thenee-brand-logo.png"
+            alt="THENEE"
+            className="pro-brand-logo"
+          />
+          <div className="pro-brand-text">
             <span className="pro-brand-name">THENEE</span>
-            <span className="pro-brand-tag">KADAYAM • TENKASI</span>
-          </a>
-
-          <div className="pro-secure-badge">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
-            <span>Secure</span>
+            <span className="pro-brand-tag">Roots of Nature</span>
           </div>
         </div>
+
+        <div className="pro-header-spacer" />
       </header>
 
-      {/* Main Form Center */}
+      {/* Main Login Card */}
       <main className="pro-login-main">
-        <div className="pro-login-card">
-          {/* Card Top Title */}
-          <div className="pro-card-header">
-            {isCheckoutRedirect && (
-              <div className="pro-checkout-alert-pill">
-                <span>🛒 Sign in to complete your checkout</span>
-              </div>
-            )}
-            <div className="pro-leaf-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#31543A" strokeWidth="2">
-                <path d="M11 20A7 7 0 0 1 4 13C4 8 8 3 13 3c5 0 7 2 7 7 0 5-4 10-9 10Z" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M11 20V12" strokeLinecap="round" strokeLinejoin="round" />
+        <div className="pro-card">
+          {/* Badge & Icon */}
+          <div className="pro-card-hero">
+            <div className="pro-hero-icon-bubble">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
               </svg>
             </div>
-            <h1>{view === 'signin' ? 'Sign In' : 'Create an Account'}</h1>
-            <p>
+            <h2>{view === 'signin' ? 'Sign In to THENEE' : 'Create an Account'}</h2>
+            <p className="pro-card-subtitle">
               {isCheckoutRedirect
-                ? (view === 'signin'
-                    ? 'Sign in to access saved addresses and proceed to payment.'
-                    : 'Create an account to complete your order and track shipping.')
-                : (view === 'signin'
-                    ? 'Access your orders, track consignments & member perks.'
-                    : 'Join THENEE to track orders and earn green reward points.')}
+                ? 'Please sign in to complete your speed delivery order from Tenkasi.'
+                : view === 'signin'
+                ? 'Manage your orders, track consignments & redeem pure herbal perks.'
+                : 'Join 16,000+ happy families enjoying handcrafted herbal wellness.'}
             </p>
           </div>
+
+          {/* Database configuration reminder if keys not yet added */}
+          {!isSupabaseConfigured && (
+            <div className="pro-db-notice" role="alert">
+              <span>⚡ Database Ready: Connect Supabase URL & Key in <code>.env</code></span>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {errorMessage && (
+            <div className="pro-alert-error" role="alert">
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
+          {/* Success Message */}
+          {successMessage && (
+            <div className="pro-alert-success" role="status">
+              <span>{successMessage}</span>
+            </div>
+          )}
 
           {/* SIGN IN VIEW */}
           {view === 'signin' && (
             <>
-              {/* Method Switcher: Mobile OTP vs Email */}
-              <div className="pro-method-toggle" role="tablist">
+              {/* Tab Selector: Email vs Phone */}
+              <div className="pro-tabs" role="tablist">
                 <button
                   type="button"
-                  role="tab"
-                  aria-selected={authMethod === 'phone'}
-                  className={`pro-method-btn ${authMethod === 'phone' ? 'is-active' : ''}`}
-                  onClick={() => {
-                    setAuthMethod('phone')
-                    setErrorMessage('')
-                  }}
-                >
-                  Mobile OTP
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={authMethod === 'email'}
-                  className={`pro-method-btn ${authMethod === 'email' ? 'is-active' : ''}`}
+                  className={`pro-tab ${authMethod === 'email' ? 'is-active' : ''}`}
                   onClick={() => {
                     setAuthMethod('email')
                     setErrorMessage('')
+                    setSuccessMessage('')
                   }}
+                  role="tab"
+                  aria-selected={authMethod === 'email'}
                 >
                   Email
                 </button>
+                <button
+                  type="button"
+                  className={`pro-tab ${authMethod === 'phone' ? 'is-active' : ''}`}
+                  onClick={() => {
+                    setAuthMethod('phone')
+                    setErrorMessage('')
+                    setSuccessMessage('')
+                  }}
+                  role="tab"
+                  aria-selected={authMethod === 'phone'}
+                >
+                  Mobile OTP
+                </button>
               </div>
-
-              {/* Error Alert */}
-              {errorMessage && (
-                <div className="pro-error-msg" role="alert">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" y1="8" x2="12" y2="12" />
-                    <line x1="12" y1="16" x2="12.01" y2="16" />
-                  </svg>
-                  <span>{errorMessage}</span>
-                </div>
-              )}
-
-              {/* Phone OTP Form */}
-              {authMethod === 'phone' && (
-                !otpSent ? (
-                  <form onSubmit={handleSendOtp} className="pro-form">
-                    <div className="pro-input-group">
-                      <label htmlFor="pro-phone-input">Mobile Number</label>
-                      <div className="pro-phone-field">
-                        <span className="pro-prefix">+91</span>
-                        <input
-                          id="pro-phone-input"
-                          type="tel"
-                          maxLength={10}
-                          placeholder="98765 43210"
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
-                          required
-                          autoFocus
-                        />
-                      </div>
-                      <span className="pro-field-hint">We will send a 4-digit verification code.</span>
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="pro-submit-btn"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? 'Sending Code...' : 'Continue'}
-                    </button>
-                  </form>
-                ) : (
-                  <form onSubmit={handleVerifyOtp} className="pro-form">
-                    <div className="pro-otp-meta">
-                      <span>Code sent to <strong>+91 {phoneNumber}</strong></span>
-                      <button
-                        type="button"
-                        className="pro-link-btn"
-                        onClick={() => {
-                          setOtpSent(false)
-                          setOtpCode('')
-                        }}
-                      >
-                        Change
-                      </button>
-                    </div>
-
-                    <div className="pro-input-group">
-                      <div className="pro-otp-label-row">
-                        <label htmlFor="pro-otp-input">Verification Code</label>
-                        <button
-                          type="button"
-                          className="pro-demo-fill-btn"
-                          onClick={() => setOtpCode('1234')}
-                        >
-                          Auto-fill 1234
-                        </button>
-                      </div>
-                      <input
-                        id="pro-otp-input"
-                        type="text"
-                        maxLength={4}
-                        placeholder="• • • •"
-                        className="pro-otp-input"
-                        value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                        required
-                        autoFocus
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="pro-submit-btn"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? 'Verifying...' : 'Sign In'}
-                    </button>
-                  </form>
-                )
-              )}
 
               {/* Email & Password Form */}
               {authMethod === 'email' && (
@@ -407,13 +377,6 @@ const LoginPage = ({ onLoginSuccess, onBack, redirectTarget }) => {
                   <div className="pro-input-group">
                     <div className="pro-label-row">
                       <label htmlFor="pro-password-input">Password</label>
-                      <button
-                        type="button"
-                        className="pro-link-btn"
-                        onClick={() => setErrorMessage('For demo access, any password of 4+ characters will log you in.')}
-                      >
-                        Forgot password?
-                      </button>
                     </div>
                     <div className="pro-password-field">
                       <input
@@ -445,6 +408,78 @@ const LoginPage = ({ onLoginSuccess, onBack, redirectTarget }) => {
                 </form>
               )}
 
+              {/* Phone OTP Form */}
+              {authMethod === 'phone' && (
+                !otpSent ? (
+                  <form onSubmit={handleSendOtp} className="pro-form">
+                    <div className="pro-input-group">
+                      <label htmlFor="pro-phone-input">Mobile Number</label>
+                      <div className="pro-phone-field">
+                        <span className="pro-phone-prefix">+91</span>
+                        <input
+                          id="pro-phone-input"
+                          type="tel"
+                          maxLength={10}
+                          placeholder="98765 43210"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
+                          required
+                          autoFocus
+                        />
+                      </div>
+                      <span className="pro-field-hint">We will send a verification code via SMS</span>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="pro-submit-btn"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'Sending Code...' : 'Send Verification OTP'}
+                    </button>
+                  </form>
+                ) : (
+                  <form onSubmit={handleVerifyOtp} className="pro-form">
+                    <div className="pro-otp-meta">
+                      <span>Code sent to <strong>+91 {phoneNumber}</strong></span>
+                      <button
+                        type="button"
+                        className="pro-link-btn"
+                        onClick={() => {
+                          setOtpSent(false)
+                          setOtpCode('')
+                        }}
+                      >
+                        Change Number
+                      </button>
+                    </div>
+
+                    <div className="pro-input-group">
+                      <label htmlFor="pro-otp-input">Enter Verification Code</label>
+                      <input
+                        id="pro-otp-input"
+                        type="text"
+                        maxLength={6}
+                        placeholder="• • • • • •"
+                        className="pro-otp-input"
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                        required
+                        autoFocus
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="pro-submit-btn"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'Verifying...' : 'Verify & Continue'}
+                    </button>
+                  </form>
+                )
+              )}
+
               {/* Divider */}
               <div className="pro-divider">
                 <span>or</span>
@@ -466,20 +501,6 @@ const LoginPage = ({ onLoginSuccess, onBack, redirectTarget }) => {
                 <span>Continue with Google</span>
               </button>
 
-              {/* Quick Demo Access Option */}
-              <button
-                type="button"
-                className="pro-demo-account-btn"
-                onClick={handleQuickDemoLogin}
-                disabled={isLoading}
-                title="1-Click login as Gowtham (+91 75502 48005)"
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span>Demo Login as Gowtham</span>
-              </button>
-
               {/* Toggle to Signup */}
               <div className="pro-card-footer">
                 <span>Don&apos;t have an account?</span>{' '}
@@ -489,6 +510,7 @@ const LoginPage = ({ onLoginSuccess, onBack, redirectTarget }) => {
                   onClick={() => {
                     setView('signup')
                     setErrorMessage('')
+                    setSuccessMessage('')
                   }}
                 >
                   Create account
@@ -499,81 +521,75 @@ const LoginPage = ({ onLoginSuccess, onBack, redirectTarget }) => {
 
           {/* SIGN UP VIEW */}
           {view === 'signup' && (
-            <>
-              {errorMessage && (
-                <div className="pro-error-msg" role="alert">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" y1="8" x2="12" y2="12" />
-                    <line x1="12" y1="16" x2="12.01" y2="16" />
-                  </svg>
-                  <span>{errorMessage}</span>
-                </div>
-              )}
+            <form onSubmit={handleSignup} className="pro-form">
+              <div className="pro-input-group">
+                <label htmlFor="reg-name-input">Full Name *</label>
+                <input
+                  id="reg-name-input"
+                  type="text"
+                  placeholder="e.g. Meenakshi Sundaram"
+                  value={signupForm.name}
+                  onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })}
+                  required
+                  autoFocus
+                />
+              </div>
 
-              <form onSubmit={handleSignup} className="pro-form">
-                <div className="pro-input-group">
-                  <label htmlFor="reg-name">Full Name</label>
+              <div className="pro-input-group">
+                <label htmlFor="reg-phone-input">Mobile Number *</label>
+                <div className="pro-phone-field">
+                  <span className="pro-phone-prefix">+91</span>
                   <input
-                    id="reg-name"
-                    type="text"
-                    placeholder="Enter your name"
-                    value={signupForm.name}
-                    onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })}
+                    id="reg-phone-input"
+                    type="tel"
+                    maxLength={10}
+                    placeholder="98765 43210"
+                    value={signupForm.phone}
+                    onChange={(e) =>
+                      setSignupForm({ ...signupForm, phone: e.target.value.replace(/\D/g, '') })
+                    }
                     required
-                    autoFocus
                   />
                 </div>
+              </div>
 
-                <div className="pro-input-group">
-                  <label htmlFor="reg-phone">Mobile Number</label>
-                  <div className="pro-phone-field">
-                    <span className="pro-prefix">+91</span>
-                    <input
-                      id="reg-phone"
-                      type="tel"
-                      maxLength={10}
-                      placeholder="98765 43210"
-                      value={signupForm.phone}
-                      onChange={(e) => setSignupForm({ ...signupForm, phone: e.target.value.replace(/\D/g, '') })}
-                      required
-                    />
-                  </div>
-                </div>
+              <div className="pro-input-group">
+                <label htmlFor="reg-email-input">Email Address *</label>
+                <input
+                  id="reg-email-input"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={signupForm.email}
+                  onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
+                  required
+                />
+              </div>
 
-                <div className="pro-input-group">
-                  <label htmlFor="reg-email">Email Address (Optional)</label>
-                  <input
-                    id="reg-email"
-                    type="email"
-                    placeholder="name@example.com"
-                    value={signupForm.email}
-                    onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
-                  />
-                </div>
+              <div className="pro-input-group">
+                <label htmlFor="reg-password-input">Password (minimum 6 characters) *</label>
+                <input
+                  id="reg-password-input"
+                  type="password"
+                  placeholder="Create a secure password"
+                  value={signupForm.password}
+                  onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
+                  required
+                />
+              </div>
 
-                <div className="pro-bonus-note">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2D5A3D" strokeWidth="2">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  <span>Includes <strong>100 Free Welcome Green Points</strong></span>
-                </div>
+              <button
+                type="submit"
+                className="pro-submit-btn"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Creating Account...' : 'Create Account'}
+              </button>
 
-                <button
-                  type="submit"
-                  className="pro-submit-btn"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Creating Account...' : 'Create Account'}
-                </button>
-              </form>
-
-              {/* Divider */}
               <div className="pro-divider">
                 <span>or</span>
               </div>
 
-              {/* Google Sign In Button */}
+              {/* Google Sign In in Signup View */}
               <button
                 type="button"
                 className="pro-google-btn"
@@ -589,7 +605,7 @@ const LoginPage = ({ onLoginSuccess, onBack, redirectTarget }) => {
                 <span>Sign up with Google</span>
               </button>
 
-              {/* Toggle to Signin */}
+              {/* Toggle to Sign In */}
               <div className="pro-card-footer">
                 <span>Already have an account?</span>{' '}
                 <button
@@ -598,16 +614,17 @@ const LoginPage = ({ onLoginSuccess, onBack, redirectTarget }) => {
                   onClick={() => {
                     setView('signin')
                     setErrorMessage('')
+                    setSuccessMessage('')
                   }}
                 >
-                  Sign in
+                  Sign In
                 </button>
               </div>
-            </>
+            </form>
           )}
 
-          {/* Micro Trust Line */}
-          <div className="pro-micro-trust">
+          {/* Trust Badges */}
+          <div className="pro-trust-footer">
             <span>🔒 256-Bit SSL Encrypted</span>
             <span>•</span>
             <span>FSSAI Certified</span>
@@ -616,20 +633,6 @@ const LoginPage = ({ onLoginSuccess, onBack, redirectTarget }) => {
           </div>
         </div>
       </main>
-
-      {/* Clean Bottom Footer */}
-      <footer className="pro-login-footer">
-        <p>© {new Date().getFullYear()} The Roots Enterprises • Kadayam, Tenkasi</p>
-        <a
-          href="https://www.crearemind.in"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="pro-crearemind-link"
-          title="Visit Creare Mind (opens in new tab)"
-        >
-          <span>POWERED BY</span> <strong>CREARE MIND</strong>
-        </a>
-      </footer>
     </div>
   )
 }

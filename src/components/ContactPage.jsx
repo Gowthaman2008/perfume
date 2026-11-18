@@ -3,6 +3,7 @@ import Navbar from './Navbar'
 import OfferMarquee from './OfferMarquee'
 import Footer from './Footer'
 import { brandInfo } from '../data/products'
+import { inquiryService } from '../lib/supabase'
 import './PagesShared.css'
 import './ContactPage.css'
 
@@ -39,10 +40,19 @@ const ContactPage = ({ onOpenAccount }) => {
   })
   const [openFaq, setOpenFaq] = useState(0)
   const [toastMsg, setToastMsg] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!form.name || !form.phone || !form.message) return
+    setIsSubmitting(true)
+    try {
+      await inquiryService.submitInquiry(form)
+    } catch (err) {
+      console.warn('Inquiry submission fallback:', err)
+    } finally {
+      setIsSubmitting(false)
+    }
     setToastMsg(`Thank you, ${form.name}! Your message has been sent to our Tenkasi team. We will reply within 2 hours.`)
     setForm({ name: '', phone: '', email: '', type: 'Retail Customer Inquiry', message: '' })
     setTimeout(() => setToastMsg(''), 4500)
@@ -90,7 +100,7 @@ const ContactPage = ({ onOpenAccount }) => {
                   <label>Your Full Name *</label>
                   <input
                     type="text"
-                    placeholder="e.g. Gowtham / Meenakshi"
+                    placeholder="e.g. Meenakshi Sundaram"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     required
