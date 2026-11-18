@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
 import { brandInfo } from '../data/products'
+import { ImageWithSkeleton } from './Skeleton'
 import './CheckoutPage.css'
 
 const INITIAL_ORDERS_FALLBACK = [
@@ -419,31 +420,6 @@ const CheckoutPage = ({ onBack, onOpenAccount }) => {
                   </div>
                 </div>
               </section>
-
-              {/* TRUST GUARANTEES BANNER */}
-              <div className="checkout-trust-banner">
-                <div className="trust-item">
-                  <span className="trust-icon">🌱</span>
-                  <div>
-                    <strong>Direct Village Sourcing</strong>
-                    <p>Tenkasi Kadayam SHG women artisans</p>
-                  </div>
-                </div>
-                <div className="trust-item">
-                  <span className="trust-icon">📦</span>
-                  <div>
-                    <strong>Speed Post Delivery</strong>
-                    <p>Safe speed dispatch across Tamil Nadu & India</p>
-                  </div>
-                </div>
-                <div className="trust-item">
-                  <span className="trust-icon">🔒</span>
-                  <div>
-                    <strong>100% Buyer Protection</strong>
-                    <p>RBI authorized gateway & instant refunds</p>
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* RIGHT COLUMN: STICKY ORDER SUMMARY */}
@@ -459,7 +435,11 @@ const CheckoutPage = ({ onBack, onOpenAccount }) => {
                   {cartItems.map((item) => (
                     <div className="summary-item-row" key={item.id}>
                       <div className="summary-item-img-wrap">
-                        <img src={item.cardImage} alt={item.name} />
+                        <ImageWithSkeleton
+                          src={item.cardImage}
+                          alt={item.name}
+                          skeletonBorderRadius="6px"
+                        />
                         <span className="summary-item-qty">{item.quantity}</span>
                       </div>
                       <div className="summary-item-info">
@@ -572,6 +552,31 @@ const CheckoutPage = ({ onBack, onOpenAccount }) => {
                 </div>
               </div>
             </aside>
+
+            {/* TRUST GUARANTEES BANNER */}
+            <div className="checkout-trust-banner">
+              <div className="trust-item">
+                <span className="trust-icon">🌱</span>
+                <div>
+                  <strong>Direct Village Sourcing</strong>
+                  <p>Tenkasi Kadayam SHG women artisans</p>
+                </div>
+              </div>
+              <div className="trust-item">
+                <span className="trust-icon">📦</span>
+                <div>
+                  <strong>Speed Post Delivery</strong>
+                  <p>Safe speed dispatch across Tamil Nadu & India</p>
+                </div>
+              </div>
+              <div className="trust-item">
+                <span className="trust-icon">🔒</span>
+                <div>
+                  <strong>100% Buyer Protection</strong>
+                  <p>RBI authorized gateway & instant refunds</p>
+                </div>
+              </div>
+            </div>
           </div>
         </main>
       )}

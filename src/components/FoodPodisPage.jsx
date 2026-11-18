@@ -1,8 +1,10 @@
+import { useState, useEffect } from 'react'
 import Navbar from './Navbar'
 import OfferMarquee from './OfferMarquee'
 import Footer from './Footer'
 import { individualPodis, products } from '../data/products'
 import { useCart } from '../context/CartContext'
+import { SkeletonPodiCard, ImageWithSkeleton } from './Skeleton'
 import './PagesShared.css'
 import './FoodPodisPage.css'
 
@@ -15,6 +17,12 @@ const RICE_PAIRING_STEPS = [
 
 const FoodPodisPage = ({ onOpenAccount }) => {
   const { addToCart, setSelectedProduct, openCart } = useCart()
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300)
+    return () => clearTimeout(timer)
+  }, [])
 
   // Value Combo from main products list
   const podiCombo = products.find((p) => p.id === 'food-podis')
@@ -85,7 +93,12 @@ const FoodPodisPage = ({ onOpenAccount }) => {
             </div>
 
             <div className="combo-right">
-              <img src={podiCombo.bottle} alt={podiCombo.name} className="combo-img" />
+              <ImageWithSkeleton
+                src={podiCombo.bottle}
+                alt={podiCombo.name}
+                className="combo-img"
+                skeletonBorderRadius="16px"
+              />
             </div>
           </div>
         )}
@@ -98,16 +111,24 @@ const FoodPodisPage = ({ onOpenAccount }) => {
 
         {/* 4 Individual Podis Grid */}
         <div className="podis-cards-grid">
-          {individualPodis.map((podi) => (
-            <div className="podi-card" key={podi.id}>
-              <div
-                className="podi-media"
-                onClick={() => setSelectedProduct(podi)}
-                title="Click for full benefits & ingredients"
-              >
-                <img src={podi.image || podi.bottle} alt={podi.name} className="podi-img" />
-                <span className="podi-tag">{podi.weight || '100g Pouch'}</span>
-              </div>
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => <SkeletonPodiCard key={i} />)
+          ) : (
+            individualPodis.map((podi) => (
+              <div className="podi-card" key={podi.id}>
+                <div
+                  className="podi-media"
+                  onClick={() => setSelectedProduct(podi)}
+                  title="Click for full benefits & ingredients"
+                >
+                  <ImageWithSkeleton
+                    src={podi.image || podi.bottle}
+                    alt={podi.name}
+                    className="podi-img"
+                    skeletonBorderRadius="12px"
+                  />
+                  <span className="podi-tag">{podi.weight || '100g Pouch'}</span>
+                </div>
 
               <div className="podi-details">
                 {podi.tamilName && <span className="podi-tamil">{podi.tamilName}</span>}
@@ -156,8 +177,9 @@ const FoodPodisPage = ({ onOpenAccount }) => {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+          ))
+        )}
+      </div>
 
         {/* Visual Pairing Ritual Guide */}
         <div className="rice-pairing-section">

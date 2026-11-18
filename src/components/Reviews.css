@@ -108,48 +108,54 @@
 
 @media (max-width: 600px) {
   .reviews {
-    padding: 45px 16px;
+    padding: 34px 14px;
   }
 
   .reviews-kicker {
-    font-size: 0.72rem;
-    margin-bottom: 6px;
+    font-size: 0.64rem;
+    margin-bottom: 4px;
   }
 
   .reviews-heading {
-    font-size: 1.75rem;
-    margin-bottom: 24px;
-    line-height: 1.25;
+    font-size: 1.45rem;
+    margin-bottom: 18px;
+    line-height: 1.2;
   }
 
   .reviews-grid {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 12px;
   }
 
   .review-card {
-    border-radius: 18px;
+    border-radius: 14px;
   }
 
   .review-photo {
-    height: 190px;
+    height: 150px;
   }
 
   .review-body {
-    padding: 14px 16px 18px;
+    padding: 10px 14px 14px;
+  }
+
+  .review-product-tag {
+    font-size: 0.64rem;
+    padding: 2px 8px;
+    margin-bottom: 8px;
   }
 
   .review-text {
-    font-size: 0.85rem;
-    line-height: 1.5;
-    margin-bottom: 12px;
+    font-size: 0.76rem;
+    line-height: 1.4;
+    margin-bottom: 8px;
   }
 
   .review-name {
-    font-size: 0.9rem;
+    font-size: 0.82rem;
   }
 
   .review-role {
-    font-size: 0.75rem;
+    font-size: 0.68rem;
   }
 }

@@ -494,33 +494,76 @@
 
 @media (max-width: 640px) {
   .footer {
-    padding-top: 30px;
+    padding-top: 20px;
   }
   .footer-newsletter {
-    padding: 0 14px;
-    margin-bottom: 30px;
+    padding: 0 12px;
+    margin-bottom: 24px;
   }
   .footer-newsletter-inner {
-    padding: 20px 16px;
-    border-radius: 18px;
+    padding: 16px 14px;
+    border-radius: 14px;
     flex-direction: column;
     align-items: stretch;
-    gap: 16px;
+    gap: 12px;
+  }
+  .footer-newsletter-text h3 {
+    font-size: 1.15rem;
+  }
+  .footer-newsletter-text p {
+    font-size: 0.74rem;
   }
   .footer-main {
     grid-template-columns: 1fr;
-    padding: 0 16px 30px;
-    gap: 28px;
+    padding: 0 14px 20px;
+    gap: 22px;
+  }
+  .footer-brand {
+    gap: 12px;
+  }
+  .footer-logo-thumb {
+    width: 36px;
+    height: 36px;
+  }
+  .footer-logo-title {
+    font-size: 1.25rem;
+  }
+  .footer-brand-motto {
+    font-size: 0.76rem;
+    line-height: 1.5;
+  }
+  .footer-cert-badge {
+    padding: 5px 10px;
+    border-radius: 8px;
+    gap: 8px;
+  }
+  .footer-cert-num {
+    font-size: 0.72rem;
+  }
+  .footer-col h4 {
+    font-size: 0.82rem;
+    margin-bottom: 8px;
+  }
+  .footer-col ul {
+    gap: 7px;
+  }
+  .footer-col li a {
+    font-size: 0.74rem;
   }
   .footer-form {
     max-width: 100%;
     flex-direction: column;
     gap: 8px;
   }
+  .footer-form button {
+    padding: 8px 16px;
+    font-size: 0.76rem;
+  }
   .footer-bottom {
     flex-direction: column;
     text-align: center;
-    padding: 16px;
-    gap: 12px;
+    padding: 12px 14px;
+    gap: 8px;
+    font-size: 0.7rem;
   }
 }

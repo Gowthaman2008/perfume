@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
 import { products, individualPodis, brandInfo } from '../data/products'
+import { SkeletonOrderCard, ImageWithSkeleton } from './Skeleton'
 import './AccountPage.css'
 
 const INITIAL_ORDERS = [
@@ -90,9 +91,16 @@ const AccountPage = ({ onBack }) => {
     return 'hub'
   })
 
+  const [isLoadingTab, setIsLoadingTab] = useState(false)
   const [activeTrackingOrder, setActiveTrackingOrder] = useState(null)
   const [copiedCoupon, setCopiedCoupon] = useState('')
   const [toastMsg, setToastMsg] = useState('')
+
+  useEffect(() => {
+    setIsLoadingTab(true)
+    const timer = setTimeout(() => setIsLoadingTab(false), 200)
+    return () => clearTimeout(timer)
+  }, [activeTab])
 
   // Orders State
   const [ordersList, setOrdersList] = useState(() => {
@@ -512,34 +520,45 @@ const AccountPage = ({ onBack }) => {
           {/* SUBPAGE 1: ORDERS */}
           {activeTab === 'orders' && (
             <div className="subpage-content-box">
-              <div className="orders-list">
-                {ordersList.map((order) => (
-                  <div className="order-card" key={order.id}>
-                    <div className="order-card-header">
-                      <div>
-                        <span className="order-card-id">{order.id}</span>
-                        <span className="order-card-date">Ordered on {order.date}</span>
-                      </div>
-                      <div className="order-card-status-wrap">
-                        <span className={`order-status-badge ${order.status === 'Out for Delivery' ? 'status-live' : 'status-done'}`}>
-                          {order.status === 'Out for Delivery' ? '● ' : '✓ '} {order.status}
-                        </span>
-                        <strong className="order-total-amount">₹{order.total}</strong>
-                      </div>
-                    </div>
-
-                    <div className="order-card-body">
-                      {order.items.map((item, idx) => (
-                        <div className="order-product-row" key={idx}>
-                          <img src={item.image} alt={item.name} className="order-product-thumb" />
-                          <div className="order-product-info">
-                            <h4>{item.name}</h4>
-                            <p>Qty: {item.qty} • ₹{item.price}</p>
-                            <span className="order-courier-note">Carrier: {order.courier} (AWB: {order.awb})</span>
-                          </div>
+              {isLoadingTab ? (
+                <div className="orders-list">
+                  <SkeletonOrderCard />
+                  <SkeletonOrderCard />
+                </div>
+              ) : (
+                <div className="orders-list">
+                  {ordersList.map((order) => (
+                    <div className="order-card" key={order.id}>
+                      <div className="order-card-header">
+                        <div>
+                          <span className="order-card-id">{order.id}</span>
+                          <span className="order-card-date">Ordered on {order.date}</span>
                         </div>
-                      ))}
-                    </div>
+                        <div className="order-card-status-wrap">
+                          <span className={`order-status-badge ${order.status === 'Out for Delivery' ? 'status-live' : 'status-done'}`}>
+                            {order.status === 'Out for Delivery' ? '● ' : '✓ '} {order.status}
+                          </span>
+                          <strong className="order-total-amount">₹{order.total}</strong>
+                        </div>
+                      </div>
+
+                      <div className="order-card-body">
+                        {order.items.map((item, idx) => (
+                          <div className="order-product-row" key={idx}>
+                            <ImageWithSkeleton
+                              src={item.image}
+                              alt={item.name}
+                              className="order-product-thumb"
+                              skeletonBorderRadius="8px"
+                            />
+                            <div className="order-product-info">
+                              <h4>{item.name}</h4>
+                              <p>Qty: {item.qty} • ₹{item.price}</p>
+                              <span className="order-courier-note">Carrier: {order.courier} (AWB: {order.awb})</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
 
                     <div className="order-card-actions">
                       <button
@@ -584,8 +603,9 @@ const AccountPage = ({ onBack }) => {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
+        )}
 
           {/* SUBPAGE 2: ADDRESSES */}
           {activeTab === 'addresses' && (

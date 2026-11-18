@@ -1,4 +1,5 @@
 import useReveal from '../lib/useReveal'
+import { ImageWithSkeleton } from './Skeleton'
 import './OfferGallery.css'
 
 const LEFT_CARDS = [
@@ -47,7 +48,12 @@ const RIGHT_CARDS = [
 
 const GalleryCard = ({ card, tall }) => (
   <div className={`gallery-card ${tall ? 'is-tall' : 'is-wide'}`}>
-    <img src={card.image} alt="" className="gallery-card-img" />
+    <ImageWithSkeleton
+      src={card.image}
+      alt=""
+      className="gallery-card-img"
+      skeletonBorderRadius="16px"
+    />
     <div className="gallery-card-overlay">
       <span className="gallery-card-offer">{card.offer}</span>
       <span className="gallery-card-sub">{card.sub}</span>

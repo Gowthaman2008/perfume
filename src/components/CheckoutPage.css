@@ -163,12 +163,16 @@
 .checkout-layout-grid {
   display: grid;
   grid-template-columns: 1fr 390px;
-  gap: 32px;
+  grid-template-areas:
+    "forms sidebar"
+    "trust sidebar";
+  gap: 28px;
   align-items: start;
 }
 
 /* LEFT COLUMN - FORMS */
 .checkout-forms-column {
+  grid-area: forms;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -270,6 +274,7 @@
 
 /* TRUST BANNER */
 .checkout-trust-banner {
+  grid-area: trust;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
@@ -304,6 +309,7 @@
 
 /* RIGHT COLUMN - STICKY ORDER SUMMARY */
 .checkout-sidebar-column {
+  grid-area: sidebar;
   position: sticky;
   top: 90px;
 }
@@ -840,41 +846,222 @@
 
 /* RESPONSIVE BREAKPOINTS */
 @media (max-width: 992px) {
+  .checkout-main-content {
+    margin: 16px auto;
+    padding: 0 16px 40px;
+  }
+
   .checkout-layout-grid {
-    grid-template-columns: 1fr;
-    gap: 24px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    width: 100% !important;
   }
 
+  /* ORDER 1: Delivery Address Form shows FIRST on mobile */
   .checkout-forms-column {
-    order: 1; /* Delivery address shows FIRST on mobile */
+    order: 1 !important;
+    width: 100% !important;
   }
 
+  /* ORDER 2: Order summary and payment button show SECOND */
   .checkout-sidebar-column {
-    position: static;
-    order: 2; /* Order summary and payment button show AFTER address */
+    position: static !important;
+    order: 2 !important;
+    width: 100% !important;
+  }
+
+  /* ORDER 3: Trust Guarantees banner shows at the bottom */
+  .checkout-trust-banner {
+    order: 3 !important;
+    width: 100% !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
   }
 
   .checkout-stepper-progress {
     display: none; /* Hide stepper on small tablets/mobile to avoid crowding */
   }
+}
 
-  .checkout-trust-banner {
-    grid-template-columns: 1fr;
+@media (max-width: 768px) {
+  .form-field-row,
+  .form-field-row.three-cols {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  .form-field input,
+  .coupon-input-row input {
+    font-size: 16px !important; /* Prevents auto-zoom on iOS Safari */
   }
 }
 
 @media (max-width: 640px) {
   .checkout-nav-bar {
-    padding: 12px 16px;
+    padding: 8px 12px;
+  }
+
+  .checkout-nav-inner {
+    gap: 6px;
+  }
+
+  .checkout-nav-back-btn {
+    padding: 5px 10px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    gap: 4px;
+  }
+
+  .checkout-brand-logo .logo-main {
+    font-size: 1.05rem;
+  }
+
+  .checkout-brand-logo .logo-sub {
+    font-size: 0.58rem;
+  }
+
+  .checkout-secure-badge {
+    gap: 4px;
+    font-size: 0.62rem;
+    white-space: nowrap;
+  }
+
+  .checkout-secure-badge .shield-icon {
+    font-size: 0.95rem;
+  }
+
+  .checkout-secure-badge small {
+    display: none;
+  }
+
+  .checkout-main-content {
+    padding: 0 10px 30px !important;
+    margin: 10px auto !important;
   }
 
   .checkout-card-section {
-    padding: 18px 16px;
+    padding: 14px 12px;
+    border-radius: 12px;
   }
 
-  .form-field-row,
-  .form-field-row.three-cols {
-    grid-template-columns: 1fr;
+  .checkout-section-header {
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+  }
+
+  .section-step-num {
+    width: 24px;
+    height: 24px;
+    font-size: 0.78rem;
+  }
+
+  .checkout-section-header h3 {
+    font-size: 0.95rem;
+  }
+
+  .checkout-section-header p {
+    font-size: 0.68rem;
+  }
+
+  .form-field label {
+    font-size: 0.64rem;
+  }
+
+  .form-field input {
+    padding: 8px 12px;
+  }
+
+  .checkout-summary-card {
+    padding: 14px 12px;
+    border-radius: 12px;
+    gap: 10px;
+  }
+
+  .summary-card-header {
+    padding-bottom: 8px;
+  }
+
+  .summary-card-header h3 {
+    font-size: 0.98rem;
+  }
+
+  .item-count-badge {
+    font-size: 0.65rem;
+    padding: 1px 8px;
+  }
+
+  .summary-item-img-wrap {
+    width: 38px;
+    height: 38px;
+  }
+
+  .summary-item-info h4 {
+    font-size: 0.76rem;
+  }
+
+  .summary-item-info .item-vol {
+    font-size: 0.64rem;
+  }
+
+  .summary-item-price strong {
+    font-size: 0.82rem;
+  }
+
+  .checkout-coupon-box {
+    padding: 8px 10px;
+  }
+
+  .coupon-box-top {
+    font-size: 0.72rem;
+    margin-bottom: 4px;
+  }
+
+  .coupon-input-row button {
+    padding: 5px 12px;
+    font-size: 0.74rem;
+  }
+
+  .breakdown-row {
+    font-size: 0.78rem;
+  }
+
+  .total-row {
+    font-size: 0.88rem;
+  }
+
+  .grand-total-val {
+    font-size: 1.15rem;
+  }
+
+  .checkout-pay-btn {
+    font-size: 0.86rem;
+    padding: 11px 16px;
+    box-shadow: 0 4px 16px rgba(35, 75, 47, 0.25);
+  }
+
+  .checkout-security-guarantee {
+    font-size: 0.62rem;
+    gap: 6px;
+  }
+
+  .trust-item {
+    padding: 10px 12px;
+    border-radius: 10px;
+    gap: 10px;
+  }
+
+  .trust-icon {
+    font-size: 1.25rem;
+  }
+
+  .trust-item strong {
+    font-size: 0.78rem;
+  }
+
+  .trust-item p {
+    font-size: 0.66rem;
   }
 
   .success-action-buttons {
@@ -882,6 +1069,30 @@
   }
 
   .checkout-success-card {
-    padding: 24px 18px;
+    padding: 20px 14px;
+    border-radius: 14px;
+  }
+
+  .success-heading {
+    font-size: 1.25rem;
+  }
+
+  .success-subheading {
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .checkout-nav-bar {
+    padding: 8px 10px;
+  }
+
+  .checkout-nav-back-btn {
+    padding: 5px 8px;
+    font-size: 0.7rem;
+  }
+
+  .checkout-secure-badge strong {
+    display: none;
   }
 }

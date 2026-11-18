@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
+import { ImageWithSkeleton } from './Skeleton'
 import './CartDrawer.css'
 
 const CartDrawer = () => {
@@ -124,7 +125,12 @@ const CartDrawer = () => {
               {cartItems.map((item) => (
                 <div className="cart-item" key={item.id}>
                   <div className="cart-item-img-wrap">
-                    <img src={item.cardImage} alt={item.name} className="cart-item-img" />
+                    <ImageWithSkeleton
+                      src={item.cardImage}
+                      alt={item.name}
+                      className="cart-item-img"
+                      skeletonBorderRadius="8px"
+                    />
                   </div>
                   <div className="cart-item-details">
                     <div className="cart-item-top">

@@ -431,19 +431,19 @@
 @media (max-width: 860px), (max-height: 620px) {
   .hero {
     min-height: auto;
-    padding-bottom: 24px;
+    padding-bottom: 16px;
   }
 
   .hero-main {
-    padding-top: 14px;
+    padding-top: 10px;
   }
 
   .hero-body {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 0 16px;
-    gap: 16px;
+    padding: 0 14px;
+    gap: 12px;
   }
 
   .hero-text {
@@ -451,15 +451,15 @@
   }
 
   .hero-kicker-badge {
-    font-size: 0.68rem;
-    padding: 4px 12px;
-    margin-bottom: 8px;
+    font-size: 0.62rem;
+    padding: 3px 10px;
+    margin-bottom: 6px;
   }
 
   .hero-text h1 {
-    font-size: 2.1rem;
-    line-height: 1.1;
-    margin-bottom: 10px;
+    font-size: 1.65rem;
+    line-height: 1.12;
+    margin-bottom: 6px;
   }
 
   .hero-title-subtext {
@@ -467,46 +467,46 @@
   }
 
   .hero-title-leaf {
-    width: 16px;
-    height: 16px;
-    top: -8px;
-    right: -4px;
+    width: 14px;
+    height: 14px;
+    top: -6px;
+    right: -3px;
   }
 
   .hero-tamil-tag {
-    padding: 3px 10px;
-    font-size: 0.72rem;
-    margin-bottom: 10px;
+    padding: 2px 8px;
+    font-size: 0.66rem;
+    margin-bottom: 8px;
   }
 
   .hero-text p {
-    font-size: 0.88rem;
-    line-height: 1.5;
-    max-width: 330px;
-    margin: 0 auto 14px;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    max-width: 300px;
+    margin: 0 auto 10px;
   }
 
   .hero-price-row {
     justify-content: center;
-    gap: 8px;
-    margin-bottom: 14px;
+    gap: 6px;
+    margin-bottom: 10px;
   }
 
   .hero-price {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 
   .hero-orig-price {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
   }
 
   .hero-weight-badge {
-    font-size: 0.7rem;
-    padding: 3px 8px;
+    font-size: 0.64rem;
+    padding: 2px 6px;
   }
 
   .hero-rating-badge {
-    font-size: 0.72rem;
+    font-size: 0.65rem;
   }
 
   .hero-actions {
@@ -515,58 +515,72 @@
   }
 
   .btn {
-    padding: 10px 18px;
-    font-size: 0.8rem;
+    padding: 8px 16px;
+    font-size: 0.74rem;
+    border-radius: 999px;
   }
 
   .hero-nav {
-    margin-top: 14px;
+    margin-top: 10px;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
   }
 
   .hero-nav-count {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
 
   .hero-arrow {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
   }
 
   .hero-family-count {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
   }
 
   .hero-right {
-    margin-top: 8px;
+    margin-top: 6px;
     flex-direction: column;
     align-items: center;
   }
 
   .hero-visual {
-    width: 220px;
-    height: 250px;
+    width: 180px;
+    height: 190px;
   }
 
   .hero-bottle-img {
-    max-height: 230px;
+    max-height: 180px;
   }
 
   .hero-badges {
     flex-direction: row;
-    gap: 8px;
-    margin-top: 10px;
+    gap: 6px;
+    margin-top: 8px;
   }
 
   .hero-badge {
-    padding: 6px 10px;
-    font-size: 0.65rem;
-    gap: 6px;
+    width: 58px;
+    height: 58px;
+    padding: 4px;
+    font-size: 0.55rem;
+    gap: 3px;
+  }
+
+  .hero-badge span {
+    font-size: 0.52rem;
+    line-height: 1.15;
   }
 
   .hero-badge svg {
-    width: 15px;
-    height: 15px;
+    width: 12px;
+    height: 12px;
+  }
+}
+
+@media (max-width: 520px) {
+  .hero-pills {
+    display: none; /* Hide top pill tabs on small mobile to avoid crowding the nav */
   }
 }

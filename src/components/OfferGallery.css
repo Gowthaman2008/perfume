@@ -143,27 +143,35 @@
 
 @media (max-width: 640px) {
   .offer-gallery {
-    padding: 45px 16px;
+    padding: 34px 14px;
   }
 
   .offer-gallery-header {
-    margin-bottom: 24px;
+    margin-bottom: 18px;
   }
 
   .offer-gallery-header h2 {
-    font-size: 1.75rem;
+    font-size: 1.45rem;
   }
 
   .offer-gallery-grid {
-    gap: 12px;
+    gap: 10px;
   }
 
   .offer-gallery-col {
-    gap: 12px;
+    gap: 10px;
   }
 
   .gallery-card {
-    height: 180px;
-    border-radius: 14px;
+    height: 145px;
+    border-radius: 12px;
+  }
+
+  .gallery-card-offer {
+    font-size: 0.82rem;
+  }
+
+  .gallery-card-sub {
+    font-size: 0.64rem;
   }
 }

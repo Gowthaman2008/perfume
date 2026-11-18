@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Navbar from './Navbar'
 import OfferMarquee from './OfferMarquee'
 import Footer from './Footer'
+import { SkeletonReviewCard } from './Skeleton'
 import './PagesShared.css'
 import './ReviewsPage.css'
 
@@ -90,9 +91,16 @@ const REVIEW_PRODUCTS = [
 
 const ReviewsPage = ({ onOpenAccount }) => {
   const [filter, setFilter] = useState('All Reviews')
+  const [isLoading, setIsLoading] = useState(false)
   const [reviewsList, setReviewsList] = useState(INITIAL_REVIEWS)
   const [helpfulMap, setHelpfulMap] = useState({})
   const [toastMsg, setToastMsg] = useState('')
+
+  useEffect(() => {
+    setIsLoading(true)
+    const timer = setTimeout(() => setIsLoading(false), 250)
+    return () => clearTimeout(timer)
+  }, [filter])
 
   // Form State
   const [form, setForm] = useState({
@@ -221,8 +229,11 @@ const ReviewsPage = ({ onOpenAccount }) => {
 
         {/* Reviews Cards List */}
         <div className="reviews-cards-grid">
-          {filteredReviews.map((rev) => (
-            <div className="customer-review-card" key={rev.id}>
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => <SkeletonReviewCard key={i} />)
+          ) : (
+            filteredReviews.map((rev) => (
+              <div className="customer-review-card" key={rev.id}>
               <div className="review-card-top">
                 <div className="reviewer-info">
                   <div className="reviewer-avatar">{rev.name.charAt(0)}</div>
@@ -253,8 +264,9 @@ const ReviewsPage = ({ onOpenAccount }) => {
                 </button>
               </div>
             </div>
-          ))}
-        </div>
+          ))
+        )}
+      </div>
 
         {/* Write a Review Section */}
         <div className="write-review-card">

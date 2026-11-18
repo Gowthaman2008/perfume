@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Navbar from './Navbar'
 import OfferMarquee from './OfferMarquee'
 import Footer from './Footer'
 import { products, individualPodis } from '../data/products'
 import { useCart } from '../context/CartContext'
+import { SkeletonProductCard, ImageWithSkeleton } from './Skeleton'
 import './PagesShared.css'
 import './ProductsPage.css'
 
@@ -17,7 +18,14 @@ const CATEGORIES = [
 const ProductsPage = ({ onOpenAccount }) => {
   const [activeCategory, setActiveCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
   const { addToCart, setSelectedProduct, openCart } = useCart()
+
+  useEffect(() => {
+    setIsLoading(true)
+    const timer = setTimeout(() => setIsLoading(false), 300)
+    return () => clearTimeout(timer)
+  }, [activeCategory])
 
   // Combine products
   const allCatalog = [
@@ -107,20 +115,28 @@ const ProductsPage = ({ onOpenAccount }) => {
 
         {/* Product Grid */}
         <div className="products-catalog-grid">
-          {filtered.map((item) => (
-            <div className="prod-catalog-card" key={item.id}>
-              <div
-                className="prod-card-media"
-                onClick={() => setSelectedProduct(item)}
-                title="Click for full benefits & ingredients"
-              >
-                <img src={item.bottle || item.image} alt={item.name} className="prod-card-img" />
-                {item.originalPrice > item.price && (
-                  <span className="prod-discount-tag">
-                    {Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)}% OFF
-                  </span>
-                )}
-              </div>
+          {isLoading ? (
+            Array.from({ length: 6 }).map((_, i) => <SkeletonProductCard key={i} />)
+          ) : (
+            filtered.map((item) => (
+              <div className="prod-catalog-card" key={item.id}>
+                <div
+                  className="prod-card-media"
+                  onClick={() => setSelectedProduct(item)}
+                  title="Click for full benefits & ingredients"
+                >
+                  <ImageWithSkeleton
+                    src={item.bottle || item.image}
+                    alt={item.name}
+                    className="prod-card-img"
+                    skeletonBorderRadius="12px"
+                  />
+                  {item.originalPrice > item.price && (
+                    <span className="prod-discount-tag">
+                      {Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)}% OFF
+                    </span>
+                  )}
+                </div>
 
               <div className="prod-card-body">
                 {item.tamilName && <span className="prod-tamil-title">{item.tamilName}</span>}
@@ -166,8 +182,9 @@ const ProductsPage = ({ onOpenAccount }) => {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+          ))
+        )}
+      </div>
 
         {/* Bottom Purity Promise Callout */}
         <div className="products-guarantee-banner">

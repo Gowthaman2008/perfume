@@ -2,6 +2,7 @@ import Navbar from './Navbar'
 import OfferMarquee from './OfferMarquee'
 import Footer from './Footer'
 import { brandInfo } from '../data/products'
+import { ImageWithSkeleton } from './Skeleton'
 import './PagesShared.css'
 import './OurStoryPage.css'
 
@@ -96,10 +97,11 @@ const OurStoryPage = ({ onOpenAccount }) => {
           </div>
 
           <div className="story-hero-media">
-            <img
+            <ImageWithSkeleton
               src="/images/custom_thenee/rural-women-artisans.jpg"
               alt="Rural Women Artisans of THENEE"
               className="story-main-img"
+              skeletonBorderRadius="16px"
             />
             <span className="img-caption">Our artisan self-help team hand-sorting botanicals in Tenkasi</span>
           </div>
@@ -137,10 +139,11 @@ const OurStoryPage = ({ onOpenAccount }) => {
         {/* Women Empowerment Narrative */}
         <div className="empowerment-narrative-card">
           <div className="empowerment-media">
-            <img
+            <ImageWithSkeleton
               src="/images/custom_thenee/herbal-harvest-village.jpg"
               alt="Village Harvest"
               className="empowerment-img"
+              skeletonBorderRadius="16px"
             />
           </div>
           <div className="empowerment-content">

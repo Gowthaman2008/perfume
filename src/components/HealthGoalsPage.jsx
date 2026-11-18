@@ -4,6 +4,7 @@ import OfferMarquee from './OfferMarquee'
 import Footer from './Footer'
 import { products, individualPodis } from '../data/products'
 import { useCart } from '../context/CartContext'
+import { ImageWithSkeleton } from './Skeleton'
 import './PagesShared.css'
 import './HealthGoalsPage.css'
 
@@ -146,7 +147,12 @@ const HealthGoalsPage = ({ onOpenAccount }) => {
             <div className="matched-products-grid">
               {matchedProducts.map((item) => (
                 <div className="matched-prod-card" key={item.id}>
-                  <img src={item.bottle || item.image} alt={item.name} className="matched-img" />
+                  <ImageWithSkeleton
+                    src={item.bottle || item.image}
+                    alt={item.name}
+                    className="matched-img"
+                    skeletonBorderRadius="12px"
+                  />
                   <div className="matched-info">
                     <h4>{item.name}</h4>
                     <p className="matched-vol">{item.volume || item.weight || '100g Pouch'}</p>
